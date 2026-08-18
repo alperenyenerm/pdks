@@ -1,0 +1,29 @@
+# ============================================================
+# YNR MAKİNE YÖVMİYE VE PUANTAJ PRO - APACHE WEB SUNUCU YAPILANDIRMASI
+# ============================================================
+
+DirectoryIndex index.php index.html
+
+<IfModule mod_mime.c>
+    AddDefaultCharset UTF-8
+    AddCharset UTF-8 .html .css .js .json .php
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # API Isteklerini Dogrudan api.php Dosyasina Yonlendir
+    RewriteRule ^api/(.*)$ api.php?action=$1 [QSA,L]
+
+    # Mevcut dosya veya dizin degilse index.php'ye yonlendir (Single Page Application SPA Desteği)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>

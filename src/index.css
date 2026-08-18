@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Custom Scrollbar for Matrix Table */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Comprehensive Print CSS Rules */
+@media print {
+  @page {
+    margin: 8mm;
+    size: auto;
+  }
+
+  body, html {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  header, aside, nav, button, .print\:hidden {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    top: -9999px !important;
+    left: -9999px !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    background: transparent !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+  .print\:border-black {
+    border-color: #000000 !important;
+  }
+  .print\:text-black {
+    color: #000000 !important;
+  }
+  .print\:bg-white {
+    background-color: #ffffff !important;
+  }
+}

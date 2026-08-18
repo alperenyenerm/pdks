@@ -1,0 +1,160 @@
+/**
+ * YNR Makine Yövmiye ve Puantaj PRO - PHP API İstemcisi
+ * Web sitenizdeki PHP REST API (api.php) ile iletişim kurar.
+ */
+
+const getApiUrl = (action: string) => {
+  // Eğer göreceli yoldaysak doğrudan api.php?action=... çağrılır
+  return `api.php?action=${action}`;
+};
+
+export async function fetchApiStatus() {
+  try {
+    const res = await fetch(getApiUrl('status'));
+    if (!res.ok) throw new Error('API Offline');
+    return await res.json();
+  } catch (err) {
+    console.warn('PHP API Bağlantı Uyarısı:', err);
+    return { status: 'OFFLINE', mysqlConnected: false };
+  }
+}
+
+export async function fetchAllDataFromApi() {
+  try {
+    const res = await fetch(getApiUrl('all_data'));
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json.success ? json.data : null;
+  } catch (err) {
+    console.warn('Veri yükleme uyarısı:', err);
+    return null;
+  }
+}
+
+export async function saveWorkerToApi(worker: any) {
+  try {
+    await fetch(getApiUrl('save_worker'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(worker),
+    });
+  } catch (err) {
+    console.warn('Personel PHP API senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function deleteWorkerFromApi(id: string) {
+  try {
+    await fetch(getApiUrl(`delete_worker&id=${id}`), { method: 'POST' });
+  } catch (err) {
+    console.warn('Personel silme uyarısı:', err);
+  }
+}
+
+export async function saveAttendanceToApi(recordOrRecords: any) {
+  try {
+    const body = Array.isArray(recordOrRecords)
+      ? { records: recordOrRecords }
+      : recordOrRecords;
+
+    await fetch(getApiUrl('save_attendance'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    console.warn('Puantaj PHP API senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function saveAdvanceToApi(advance: any) {
+  try {
+    await fetch(getApiUrl('save_advance'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(advance),
+    });
+  } catch (err) {
+    console.warn('Avans PHP API senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function deleteAdvanceFromApi(id: string) {
+  try {
+    await fetch(getApiUrl(`delete_advance&id=${id}`), { method: 'POST' });
+  } catch (err) {
+    console.warn('Avans silme uyarısı:', err);
+  }
+}
+
+export async function saveProjectToApi(project: any) {
+  try {
+    await fetch(getApiUrl('save_project'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(project),
+    });
+  } catch (err) {
+    console.warn('Proje senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function deleteProjectFromApi(id: string) {
+  try {
+    await fetch(getApiUrl(`delete_project&id=${id}`), { method: 'POST' });
+  } catch (err) {
+    console.warn('Proje silme uyarısı:', err);
+  }
+}
+
+export async function saveMachineryToApi(machine: any) {
+  try {
+    await fetch(getApiUrl('save_machinery'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(machine),
+    });
+  } catch (err) {
+    console.warn('Tezgah senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function deleteMachineryFromApi(id: string) {
+  try {
+    await fetch(getApiUrl(`delete_machinery&id=${id}`), { method: 'POST' });
+  } catch (err) {
+    console.warn('Tezgah silme uyarısı:', err);
+  }
+}
+
+export async function saveBranchToApi(branch: any) {
+  try {
+    await fetch(getApiUrl('save_branch'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(branch),
+    });
+  } catch (err) {
+    console.warn('Şube senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function deleteBranchFromApi(id: string) {
+  try {
+    await fetch(getApiUrl(`delete_branch&id=${id}`), { method: 'POST' });
+  } catch (err) {
+    console.warn('Şube silme uyarısı:', err);
+  }
+}
+
+export async function saveSettingsToApi(settings: any) {
+  try {
+    await fetch(getApiUrl('save_settings'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    });
+  } catch (err) {
+    console.warn('Ayar senkronizasyon uyarısı:', err);
+  }
+}
