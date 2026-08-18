@@ -187,7 +187,7 @@ export const Sidebar: React.FC = () => {
           </div>
           <div className="text-xs">
             <p className="font-semibold text-slate-200">YNR MAKİNE v3.0</p>
-            <p className="text-[10px] text-slate-400">Dünyanın En Kapsamlı Sistemi</p>
+            <p className="text-[10px] text-amber-400 font-semibold">YNR PDKS System by Alp</p>
           </div>
         </div>
       </div>
