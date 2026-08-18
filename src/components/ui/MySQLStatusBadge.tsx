@@ -1,34 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { Database, RefreshCw } from 'lucide-react';
+import { fetchApiStatus } from '../../utils/apiClient';
 
 export const MySQLStatusBadge: React.FC = () => {
   const [dbStatus, setDbStatus] = useState<{
     status: string;
     mysqlConnected: boolean;
-    database: string;
-    host: string;
-    port: number;
+    database?: string;
+    host?: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const checkStatus = async () => {
     setLoading(true);
     try {
-      let res;
-      try {
-        res = await fetch('/api/status');
-      } catch (err) {
-        res = await fetch('http://localhost:5000/api/status');
-      }
-      const data = await res.json();
+      const data = await fetchApiStatus();
       setDbStatus(data);
     } catch (err) {
       setDbStatus({
         status: 'OFFLINE',
         mysqlConnected: false,
-        database: 'ynr_puantaj',
-        host: 'localhost',
-        port: 3306,
       });
     } finally {
       setLoading(false);
@@ -50,7 +41,7 @@ export const MySQLStatusBadge: React.FC = () => {
         {dbStatus?.mysqlConnected ? (
           <span className="text-emerald-400 font-bold flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            Bağlı ({dbStatus.database})
+            Bağlı
           </span>
         ) : (
           <span className="text-amber-400 font-bold flex items-center gap-1">
