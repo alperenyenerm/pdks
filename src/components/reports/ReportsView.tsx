@@ -12,9 +12,59 @@ import {
   Send,
   Building2,
   Clock,
+  ShieldCheck,
 } from 'lucide-react';
 import { WhatsAppModal } from './WhatsAppModal';
 import { BankPaymentModal } from './BankPaymentModal';
+
+const CompanyHeaderLogo: React.FC<{ companyName: string; title: string; taxNo: string; phone: string; address: string }> = ({
+  companyName,
+  title,
+  taxNo,
+  phone,
+  address,
+}) => (
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b-2 border-slate-800 print:border-black pb-4 mb-4 gap-4">
+    <div className="flex items-center space-x-3.5">
+      {/* High-end Corporate Logo Emblem */}
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-400 p-0.5 shadow-xl flex items-center justify-center shrink-0 print:border print:border-black print:bg-none">
+        <div className="w-full h-full bg-slate-950 print:bg-white rounded-[14px] flex flex-col items-center justify-center p-1">
+          <div className="flex items-center justify-center space-x-0.5">
+            <span className="text-amber-400 font-black text-xs font-mono tracking-tighter print:text-black">YNR</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 print:bg-black"></span>
+          </div>
+          <span className="text-[8px] font-black text-white print:text-black tracking-widest font-mono">MAKİNE</span>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center space-x-2">
+          <h1 className="text-lg font-black text-white print:text-black uppercase tracking-tight font-mono">
+            {companyName}
+          </h1>
+        </div>
+        <p className="text-xs text-amber-400 print:text-black font-semibold mt-0.5">{title}</p>
+        <p className="text-[10px] text-slate-400 print:text-gray-700 font-mono mt-0.5">
+          Vergi D. / No: {taxNo} | Tel: {phone}
+        </p>
+        <p className="text-[10px] text-slate-500 print:text-gray-600 font-mono truncate max-w-md">
+          {address}
+        </p>
+      </div>
+    </div>
+
+    {/* Official Verification Badge */}
+    <div className="text-right shrink-0 hidden sm:block">
+      <div className="inline-flex items-center space-x-1 bg-slate-950 print:bg-gray-100 border border-slate-800 print:border-black px-2.5 py-1 rounded-lg text-[10px] font-mono text-slate-400 print:text-black mb-1">
+        <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 print:text-black" />
+        <span>RESMİ MAAŞ & İK BORDROSU</span>
+      </div>
+      <p className="text-[10px] text-slate-400 print:text-gray-600 font-mono">
+        Onay Kodu: YNR-{Date.now().toString().substring(6)}
+      </p>
+    </div>
+  </div>
+);
 
 export const ReportsView: React.FC = () => {
   const {
@@ -119,7 +169,7 @@ export const ReportsView: React.FC = () => {
             Resmi Bordro, Pusula & Rapor Merkezi
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Ücretli/ücretsiz raporlar, yol/yemek yardımları, gece primleri ve detaylı yazdırılabilir pusulalar
+            Şirket logolu, PDF & Yazdırma baskısına tam uyumlu resmi ücret ve puantaj belgeleri
           </p>
         </div>
 
@@ -204,21 +254,21 @@ export const ReportsView: React.FC = () => {
       {/* REPORT TYPE 1: Detaylı Ücret Bordrosu Tablosu */}
       {reportType === 'payroll' && (
         <div className="bg-slate-900 print:bg-white text-slate-100 print:text-black border border-slate-800 print:border-black rounded-3xl p-6 shadow-xl space-y-6">
-          <div className="border-b border-slate-800 print:border-black pb-4 flex justify-between items-start">
-            <div>
-              <h1 className="text-xl font-bold text-white print:text-black uppercase tracking-wide">
-                {settings.companyName}
-              </h1>
-              <p className="text-xs text-slate-400 print:text-gray-600">{settings.title}</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-lg font-bold text-amber-400 print:text-black uppercase">
-                DETAYLI PERSONEL ÜCRET BORDROSU
-              </h2>
-              <p className="text-sm font-mono font-bold text-white print:text-black">
-                DÖNEM: {getMonthNameTr(selectedMonth).toUpperCase()} {selectedYear}
-              </p>
-            </div>
+          <CompanyHeaderLogo
+            companyName={settings.companyName}
+            title={settings.title}
+            taxNo={settings.taxNo}
+            phone={settings.phone}
+            address={settings.address}
+          />
+
+          <div className="flex justify-between items-center bg-slate-950 print:bg-gray-100 p-3 rounded-2xl border border-slate-800 print:border-black">
+            <h2 className="text-sm font-extrabold text-amber-400 print:text-black uppercase tracking-wider">
+              DETAYLI PERSONEL ÜCRET BORDROSU CETVELİ
+            </h2>
+            <span className="text-xs font-mono font-bold text-white print:text-black bg-slate-900 print:bg-white border border-slate-800 print:border-black px-3 py-1 rounded-xl">
+              DÖNEM: {getMonthNameTr(selectedMonth).toUpperCase()} {selectedYear}
+            </span>
           </div>
 
           <div className="overflow-x-auto">
@@ -357,21 +407,21 @@ export const ReportsView: React.FC = () => {
 
           {selectedSummary && detailedTax && (
             <div className="bg-slate-900 print:bg-white text-slate-100 print:text-black border border-slate-800 print:border-black rounded-3xl p-8 shadow-xl space-y-6">
-              <div className="border-b border-slate-800 print:border-black pb-4 flex justify-between items-start">
-                <div>
-                  <h1 className="text-xl font-bold text-white print:text-black uppercase tracking-wide">
-                    {settings.companyName}
-                  </h1>
-                  <p className="text-xs text-slate-400 print:text-gray-600">{settings.title}</p>
-                </div>
-                <div className="text-right">
-                  <h2 className="text-lg font-bold text-amber-400 print:text-black uppercase">
-                    RESMİ ÜCRET MAAŞ PUSULASI
-                  </h2>
-                  <p className="text-sm font-mono font-bold text-white print:text-black">
-                    DÖNEM: {getMonthNameTr(selectedMonth).toUpperCase()} {selectedYear}
-                  </p>
-                </div>
+              <CompanyHeaderLogo
+                companyName={settings.companyName}
+                title={settings.title}
+                taxNo={settings.taxNo}
+                phone={settings.phone}
+                address={settings.address}
+              />
+
+              <div className="flex justify-between items-center bg-slate-950 print:bg-gray-100 p-3 rounded-2xl border border-slate-800 print:border-black">
+                <h2 className="text-sm font-extrabold text-amber-400 print:text-black uppercase tracking-wider">
+                  RESMİ BİREYSEL ÜCRET MAAŞ PUSULASI
+                </h2>
+                <span className="text-xs font-mono font-bold text-white print:text-black bg-slate-900 print:bg-white border border-slate-800 print:border-black px-3 py-1 rounded-xl">
+                  DÖNEM: {getMonthNameTr(selectedMonth).toUpperCase()} {selectedYear}
+                </span>
               </div>
 
               {/* Personal Info Box */}
@@ -606,7 +656,7 @@ export const ReportsView: React.FC = () => {
 
                 <div className="space-y-8">
                   <div className="border-b border-slate-700 print:border-black pb-2 font-bold">
-                    Teslim Alan (Personel İmza)
+                    İhtilafsız Teslim Aldım (İmza)
                   </div>
                   <div className="text-[10px] text-slate-500 print:text-gray-600">
                     {selectedSummary.worker.firstName} {selectedSummary.worker.lastName}
@@ -622,21 +672,21 @@ export const ReportsView: React.FC = () => {
       {/* REPORT TYPE 3: Vardiya Çizelgesi */}
       {reportType === 'roster' && selectedSummary && (
         <div className="bg-slate-900 print:bg-white text-slate-100 print:text-black border border-slate-800 print:border-black rounded-3xl p-6 shadow-xl space-y-6">
-          <div className="border-b border-slate-800 print:border-black pb-4 flex justify-between items-start">
-            <div>
-              <h1 className="text-xl font-bold text-white print:text-black uppercase tracking-wide">
-                {settings.companyName}
-              </h1>
-              <p className="text-xs text-slate-400 print:text-gray-600">BİREYSEL VARDİYA & GİRİŞ-ÇIKIŞ ÇİZELGESİ</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-lg font-bold text-amber-400 print:text-black font-mono">
-                {selectedSummary.worker.firstName} {selectedSummary.worker.lastName}
-              </h2>
-              <p className="text-xs font-mono text-slate-400 print:text-gray-600">
-                {getMonthNameTr(selectedMonth)} {selectedYear}
-              </p>
-            </div>
+          <CompanyHeaderLogo
+            companyName={settings.companyName}
+            title={settings.title}
+            taxNo={settings.taxNo}
+            phone={settings.phone}
+            address={settings.address}
+          />
+
+          <div className="flex justify-between items-center bg-slate-950 print:bg-gray-100 p-3 rounded-2xl border border-slate-800 print:border-black">
+            <h2 className="text-sm font-extrabold text-amber-400 print:text-black uppercase tracking-wider">
+              BİREYSEL VARDİYA & GİRİŞ-ÇIKIŞ ÇİZELGESİ
+            </h2>
+            <span className="text-xs font-mono font-bold text-white print:text-black bg-slate-900 print:bg-white border border-slate-800 print:border-black px-3 py-1 rounded-xl">
+              {selectedSummary.worker.firstName} {selectedSummary.worker.lastName} - {getMonthNameTr(selectedMonth)} {selectedYear}
+            </span>
           </div>
 
           <div className="overflow-x-auto">
@@ -720,21 +770,21 @@ export const ReportsView: React.FC = () => {
       {/* REPORT TYPE 4: Aylık Imzalı Puantaj Cetveli */}
       {reportType === 'matrix' && (
         <div className="bg-slate-900 print:bg-white text-slate-100 print:text-black border border-slate-800 print:border-black rounded-3xl p-6 shadow-xl space-y-6">
-          <div className="border-b border-slate-800 print:border-black pb-4 flex justify-between items-start">
-            <div>
-              <h1 className="text-xl font-bold text-white print:text-black uppercase tracking-wide">
-                {settings.companyName}
-              </h1>
-              <p className="text-xs text-slate-400 print:text-gray-600">{settings.title}</p>
-            </div>
-            <div className="text-right">
-              <h2 className="text-lg font-bold text-amber-400 print:text-black uppercase">
-                AYLIK RESMİ PUANTAJ CETVELİ
-              </h2>
-              <p className="text-sm font-mono font-bold text-white print:text-black">
-                DÖNEM: {getMonthNameTr(selectedMonth)} {selectedYear}
-              </p>
-            </div>
+          <CompanyHeaderLogo
+            companyName={settings.companyName}
+            title={settings.title}
+            taxNo={settings.taxNo}
+            phone={settings.phone}
+            address={settings.address}
+          />
+
+          <div className="flex justify-between items-center bg-slate-950 print:bg-gray-100 p-3 rounded-2xl border border-slate-800 print:border-black">
+            <h2 className="text-sm font-extrabold text-amber-400 print:text-black uppercase tracking-wider">
+              AYLIK RESMİ İMZALI PUANTAJ CETVELİ
+            </h2>
+            <span className="text-xs font-mono font-bold text-white print:text-black bg-slate-900 print:bg-white border border-slate-800 print:border-black px-3 py-1 rounded-xl">
+              DÖNEM: {getMonthNameTr(selectedMonth)} {selectedYear}
+            </span>
           </div>
 
           <div className="overflow-x-auto">
