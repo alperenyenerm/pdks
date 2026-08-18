@@ -1,4 +1,14 @@
-export type AttendanceType = 'FULL' | 'HALF' | 'LEAVE' | 'REPORT' | 'ABSENT' | 'WEEKEND' | 'WEEKEND_WORK';
+export type AttendanceType =
+  | 'FULL'
+  | 'HALF'
+  | 'LEAVE'
+  | 'REPORT'
+  | 'REPORT_PAID'
+  | 'REPORT_UNPAID'
+  | 'ABSENT'
+  | 'WEEKEND'
+  | 'WEEKEND_WORK';
+
 export type ShiftType = 'DAY' | 'NIGHT' | 'WEEKEND' | 'SHIFT_1' | 'SHIFT_2' | 'SHIFT_3';
 export type CurrencyCode = 'TRY' | 'USD' | 'EUR';
 
@@ -39,6 +49,16 @@ export interface AttendanceRecord {
   checkInTime?: string; // e.g. "07:55"
   checkOutTime?: string; // e.g. "18:30"
   note?: string;
+}
+
+export interface MagicPassLog {
+  id: string;
+  deviceId: string;
+  workerCode: string;
+  timestamp: string; // YYYY-MM-DD HH:mm:ss
+  eventState: 'IN' | 'OUT' | 'CHECK';
+  processed: boolean;
+  workerName?: string;
 }
 
 export interface AdvancePayment {
@@ -133,7 +153,9 @@ export interface MonthlyWorkerSummary {
   fullDays: number;
   halfDays: number;
   leaveDays: number;
-  reportDays: number;
+  reportDays: number; // Toplam Rapor
+  paidReportDays: number; // Ücretli Rapor (ÜR)
+  unpaidReportDays: number; // Ücretsiz Rapor (ÜR-)
   absentDays: number;
   weekendDays: number; // Hafta Sonu Ücretli Tatil (HT)
   weekendWorkDays: number; // Hafta Sonu Mesaili Çalışma (HÇ)

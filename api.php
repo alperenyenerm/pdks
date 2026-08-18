@@ -492,6 +492,54 @@ try {
             echo json_encode(['success' => true, 'message' => 'Giriş bilgileri başarıyla güncellendi.'], JSON_UNESCAPED_UNICODE);
             break;
 
+        // ==========================================
+        // 12. MAGICPASS CİHAZ ENTEGRASYONU
+        // ==========================================
+        case 'magicpass_push':
+            // MagicPass cihazı veya HTTP PUSH çağrılarını kabul eder
+            $deviceId = isset($inputData['device_id']) ? $inputData['device_id'] : (isset($_REQUEST['device_id']) ? $_REQUEST['device_id'] : 'MAGICPASS_01');
+            $workerCode = isset($inputData['worker_code']) ? $inputData['worker_code'] : (isset($_REQUEST['pin']) ? $_REQUEST['pin'] : (isset($_REQUEST['worker_code']) ? $_REQUEST['worker_code'] : ''));
+            $timestamp = isset($inputData['timestamp']) ? $inputData['timestamp'] : (isset($_REQUEST['time']) ? $_REQUEST['time'] : date('Y-m-d H:i:s'));
+            $eventState = isset($inputData['event_state']) ? $inputData['event_state'] : (isset($_REQUEST['state']) ? $_REQUEST['state'] : 'CHECK');
+
+            if (empty($workerCode)) {
+                echo json_encode(['success' => false, 'error' => 'Geçersiz personel kodu (pin)'], JSON_UNESCAPED_UNICODE);
+                break;
+            }
+
+            $stmt = $pdo->prepare("INSERT INTO magicpass_logs (device_id, worker_code, timestamp, event_state, processed) VALUES (:device_id, :worker_code, :timestamp, :event_state, 0)");
+            $stmt->execute([
+                ':device_id' => $deviceId,
+                ':worker_code' => $workerCode,
+                ':timestamp' => $timestamp,
+                ':event_state' => strtoupper($eventState)
+            ]);
+
+            echo json_encode(['success' => true, 'message' => 'MagicPass verisi başarıyla kaydedildi.', 'log_id' => $pdo->lastInsertId()], JSON_UNESCAPED_UNICODE);
+            break;
+
+        case 'magicpass_pull':
+            $stmt = $pdo->query("SELECT m.*, CONCAT(w.first_name, ' ', w.last_name) as worker_name 
+                                 FROM magicpass_logs m 
+                                 LEFT JOIN workers w ON (w.code = m.worker_code OR w.id = m.worker_code)
+                                 ORDER BY m.id DESC LIMIT 100");
+            $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $formatted = array_map(function($l) {
+                return [
+                    'id' => (string)$l['id'],
+                    'deviceId' => $l['device_id'],
+                    'workerCode' => $l['worker_code'],
+                    'timestamp' => $l['timestamp'],
+                    'eventState' => $l['event_state'],
+                    'processed' => (bool)$l['processed'],
+                    'workerName' => $l['worker_name'] ? $l['worker_name'] : 'Eşleşmeyen Kod (' . $l['worker_code'] . ')'
+                ];
+            }, $logs);
+
+            echo json_encode(['success' => true, 'logs' => $formatted], JSON_UNESCAPED_UNICODE);
+            break;
+
         default:
             echo json_encode(['success' => false, 'error' => 'Geçersiz API eylemi: ' . $action]);
             break;

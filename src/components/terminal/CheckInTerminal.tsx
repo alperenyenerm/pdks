@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
-import type { AttendanceType, ShiftType } from '../../types';
+import type { AttendanceType, ShiftType, MagicPassLog } from '../../types';
+import { fetchMagicPassLogsFromApi, pushMagicPassLogToApi } from '../../utils/apiClient';
 import {
   Moon,
   Sun,
   Sparkles,
+  Cpu,
+  RefreshCw,
+  Clock,
+  Send,
 } from 'lucide-react';
 
 export const CheckInTerminal: React.FC = () => {
@@ -20,13 +25,29 @@ export const CheckInTerminal: React.FC = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedShift, setSelectedShift] = useState<ShiftType>('DAY');
   const [filterDept, setFilterDept] = useState('ALL');
+  const [magicLogs, setMagicLogs] = useState<MagicPassLog[]>([]);
+  const [loadingMagic, setLoadingMagic] = useState(false);
+  const [simWorkerCode, setSimWorkerCode] = useState(workers[0]?.code || 'W-001');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  const todayStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-10`; // Current target day
+  const loadMagicLogs = async () => {
+    setLoadingMagic(true);
+    const logs = await fetchMagicPassLogsFromApi();
+    setMagicLogs(logs);
+    setLoadingMagic(false);
+  };
+
+  useEffect(() => {
+    loadMagicLogs();
+    const interval = setInterval(loadMagicLogs, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const todayStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-10`; // Target day
 
   const activeWorkers = workers.filter((w) => {
     if (w.status !== 'active') return false;
@@ -60,6 +81,45 @@ export const CheckInTerminal: React.FC = () => {
     }
   };
 
+  const handleSimulateMagicPassPush = async () => {
+    if (!simWorkerCode) return;
+    const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const res = await pushMagicPassLogToApi({
+      device_id: 'MAGICPASS_PRO_01',
+      worker_code: simWorkerCode,
+      timestamp: nowStr,
+      event_state: 'IN',
+    });
+    if (res.success) {
+      notify('MagicPass Test Verisi Gönderildi', `Personel (${simWorkerCode}) cihaz okuması simüle edildi.`, 'success');
+      loadMagicLogs();
+    } else {
+      notify('Hata', 'MagicPass simülasyonu başarısız.', 'error');
+    }
+  };
+
+  const handleApplyLogToAttendance = (log: MagicPassLog) => {
+    const worker = workers.find((w) => w.code === log.workerCode || w.id === log.workerCode);
+    if (!worker) {
+      notify('Eşleşme Bulunamadı', `Personel kodu (${log.workerCode}) sistemde kayıtlı değil.`, 'error');
+      return;
+    }
+
+    const logDate = log.timestamp.split(' ')[0] || todayStr;
+    const logTime = log.timestamp.split(' ')[1]?.substring(0, 5) || '08:00';
+
+    setAttendanceRecord({
+      workerId: worker.id,
+      date: logDate,
+      type: 'FULL',
+      overtimeHours: 0,
+      checkInTime: logTime,
+      checkOutTime: '18:00',
+    });
+
+    notify('Puantaja Dönüştürüldü', `${worker.firstName} ${worker.lastName} giriş saati (${logTime}) puantaja işlendi.`, 'success');
+  };
+
   return (
     <div className="space-y-6">
       {/* Kiosk Header Banner */}
@@ -68,13 +128,13 @@ export const CheckInTerminal: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-1">
               <Sparkles className="w-4 h-4 text-amber-400 animate-spin" />
-              <span>HIZLI VARDİYA & GİRİŞ TERMINALİ</span>
+              <span>HIZLI VARDİYA & MAGICPASS TERMINALİ</span>
             </div>
             <h2 className="text-2xl font-extrabold text-white tracking-tight">
-              YNR Makine Atölye Dokunmatik Giriş Kiosk
+              YNR Makine Atölye Dokunmatik Giriş & Cihaz Kiosk
             </h2>
             <p className="text-xs text-slate-400 mt-1">
-              Vardiya başı ve sonu personellerin tek tıkla devam ve mesai saatlerini kaydetme paneli.
+              Personel dokunmatik paneli ve MagicPass parmak izi/kartlı geçiş cihaz canlı entegrasyonu.
             </p>
           </div>
 
@@ -87,6 +147,111 @@ export const CheckInTerminal: React.FC = () => {
               {currentTime.toLocaleTimeString('tr-TR')}
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* MagicPass Hardware Integration Card */}
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+          <div className="flex items-center space-x-2">
+            <div className="p-2 bg-indigo-500/10 border border-indigo-500/30 rounded-xl">
+              <Cpu className="w-5 h-5 text-indigo-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                MagicPass Biyometrik Cihaz Entegrasyon Servisi
+              </h3>
+              <p className="text-[11px] text-slate-400">
+                MagicPass / ZK-TECO cihazlarından gelen canlı parmak izi ve kart okumaları
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={loadMagicLogs}
+            disabled={loadingMagic}
+            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs transition"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loadingMagic ? 'animate-spin' : ''}`} />
+            <span>Cihaz Verilerini Yenile</span>
+          </button>
+        </div>
+
+        {/* Webhook Connection Guide */}
+        <div className="bg-slate-950 border border-slate-800/80 p-3 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="space-y-1">
+            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Cihaz Push (Webhook) URL:</span>
+            <code className="text-amber-400 bg-slate-900 px-2 py-1 rounded font-mono text-[11px] select-all border border-slate-800">
+              http://pdks.ynrmakine.com/api.php?action=magicpass_push
+            </code>
+          </div>
+
+          {/* Test Simulator */}
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <select
+              value={simWorkerCode}
+              onChange={(e) => setSimWorkerCode(e.target.value)}
+              className="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white"
+            >
+              {workers.map((w) => (
+                <option key={w.id} value={w.code}>
+                  {w.code} - {w.firstName} {w.lastName}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleSimulateMagicPassPush}
+              className="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition flex items-center space-x-1 whitespace-nowrap"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>Test Kartı Bas</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Live MagicPass Log Table */}
+        <div className="overflow-x-auto max-h-48 overflow-y-auto border border-slate-800 rounded-xl">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-950 text-slate-400 border-b border-slate-800">
+                <th className="py-2 px-3">Cihaz</th>
+                <th className="py-2 px-3">Personel Kodu / Adı</th>
+                <th className="py-2 px-3">Tarih & Saat</th>
+                <th className="py-2 px-3 text-center">Durum</th>
+                <th className="py-2 px-3 text-right">İşlem</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 font-mono text-slate-300">
+              {magicLogs.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-4 text-center text-slate-500 text-xs">
+                    Henüz cihaz kaydı bulunamadı. Cihazınızı tanımlayın veya test kartı basın.
+                  </td>
+                </tr>
+              ) : (
+                magicLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-slate-800/40">
+                    <td className="py-2 px-3 text-indigo-400 font-bold">{log.deviceId}</td>
+                    <td className="py-2 px-3 text-white font-bold">{log.workerName}</td>
+                    <td className="py-2 px-3 text-slate-400">{log.timestamp}</td>
+                    <td className="py-2 px-3 text-center">
+                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
+                        {log.eventState === 'IN' ? 'GİRİŞ' : 'ÇIKIŞ'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 text-right">
+                      <button
+                        onClick={() => handleApplyLogToAttendance(log)}
+                        className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-2.5 py-1 rounded text-[10px] transition"
+                      >
+                        Puantaja İşle
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -203,7 +368,10 @@ export const CheckInTerminal: React.FC = () => {
 
                 {rec && rec.checkInTime && (
                   <div className="text-[11px] text-slate-400 bg-slate-950/60 p-2 rounded-lg border border-slate-800 mb-3 flex items-center justify-between">
-                    <span>Giriş Saati:</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-emerald-400" />
+                      Giriş Saati:
+                    </span>
                     <span className="font-mono font-bold text-emerald-400">{rec.checkInTime}</span>
                   </div>
                 )}

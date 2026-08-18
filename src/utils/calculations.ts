@@ -21,6 +21,31 @@ export const formatCurrency = (amount: number): string => {
   }).format(amount);
 };
 
+export const calculateOvertimeFromTimes = (
+  checkIn?: string,
+  checkOut?: string,
+  standardWorkingHours: number = 8
+): number => {
+  if (!checkIn || !checkOut) return 0;
+  const [inH, inM] = checkIn.split(':').map(Number);
+  const [outH, outM] = checkOut.split(':').map(Number);
+  if (isNaN(inH) || isNaN(outH)) return 0;
+
+  const inMinutes = inH * 60 + (inM || 0);
+  const outMinutes = outH * 60 + (outM || 0);
+  let totalMinutes = outMinutes - inMinutes;
+  if (totalMinutes < 0) totalMinutes += 24 * 60; // Overnight shift
+
+  // Deduct 1 hour meal/rest break if worked more than 5 hours
+  if (totalMinutes > 300) {
+    totalMinutes -= 60;
+  }
+
+  const workedHours = totalMinutes / 60;
+  const overtime = Math.max(0, workedHours - standardWorkingHours);
+  return Math.round(overtime * 10) / 10;
+};
+
 export const calculateWorkerMonthlySummary = (
   worker: Worker,
   year: number,
@@ -40,6 +65,8 @@ export const calculateWorkerMonthlySummary = (
   let halfDays = 0;
   let leaveDays = 0;
   let reportDays = 0;
+  let paidReportDays = 0;
+  let unpaidReportDays = 0;
   let absentDays = 0;
   let weekendDays = 0;
   let weekendWorkDays = 0;
@@ -64,7 +91,13 @@ export const calculateWorkerMonthlySummary = (
         leaveDays += 1;
         break;
       case 'REPORT':
+      case 'REPORT_PAID':
         reportDays += 1;
+        paidReportDays += 1;
+        break;
+      case 'REPORT_UNPAID':
+        reportDays += 1;
+        unpaidReportDays += 1;
         break;
       case 'ABSENT':
         absentDays += 1;
@@ -79,13 +112,17 @@ export const calculateWorkerMonthlySummary = (
 
     if (rec.shift === 'NIGHT' || rec.shift === 'SHIFT_3') nightShiftDays += 1;
 
-    // Determine overtime hours & multiplier for weekend work
-    let hrs = rec.overtimeHours || 0;
+    // Auto-calculate overtime if checkIn & checkOut present and no manual overtime set
+    let hrs = rec.overtimeHours;
+    if ((hrs === undefined || hrs === 0) && rec.checkInTime && rec.checkOutTime && rec.type !== 'ABSENT') {
+      hrs = calculateOvertimeFromTimes(rec.checkInTime, rec.checkOutTime, settings?.workingHoursPerDay || 8);
+    }
+    hrs = hrs || 0;
+
     let multiplier = rec.overtimeMultiplier || defaultOvertimeMultiplier;
 
     if (rec.type === 'WEEKEND_WORK') {
       multiplier = rec.overtimeMultiplier || sundayMultiplier;
-      // If weekend work recorded without explicit extra overtime hours, treat 8 hours work as weekend overtime
       if (hrs === 0) {
         hrs = settings?.workingHoursPerDay || 8;
       }
@@ -101,8 +138,8 @@ export const calculateWorkerMonthlySummary = (
     totalTransportAllowances += rec.transportAllowance || 0;
   });
 
-  // Equivalent paid days: FULL + HALF*0.5 + WEEKEND + WEEKEND_WORK
-  const totalWorkedDaysEquivalent = fullDays + halfDays * 0.5 + weekendDays + weekendWorkDays;
+  // Paid days = FULL + HALF*0.5 + WEEKEND + WEEKEND_WORK + REPORT_PAID
+  const totalWorkedDaysEquivalent = fullDays + halfDays * 0.5 + weekendDays + weekendWorkDays + paidReportDays;
   const baseWageEarnings = totalWorkedDaysEquivalent * worker.dailyRate;
   
   const nightShiftPercent = (settings?.nightShiftMultiplierPercent || 20) / 100;
@@ -137,6 +174,8 @@ export const calculateWorkerMonthlySummary = (
     halfDays,
     leaveDays,
     reportDays,
+    paidReportDays,
+    unpaidReportDays,
     absentDays,
     weekendDays,
     weekendWorkDays,

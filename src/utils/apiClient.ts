@@ -175,7 +175,6 @@ export async function loginToApi(credentials: { username: string; password: stri
     });
     return await res.json();
   } catch (err) {
-    // Fallback if offline/demo
     if (credentials.username === 'admin' && credentials.password === 'admin') {
       return {
         success: true,
@@ -195,6 +194,32 @@ export async function changePasswordApi(data: { username?: string; oldPassword?:
     });
     return await res.json();
   } catch (err) {
+    return { success: false, error: 'Sunucu ile iletişim kurulamadı.' };
+  }
+}
+
+export async function fetchMagicPassLogsFromApi() {
+  try {
+    const res = await fetch(getApiUrl('magicpass_pull'));
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.success ? json.logs : [];
+  } catch (err) {
+    console.warn('MagicPass veri alma hatası:', err);
+    return [];
+  }
+}
+
+export async function pushMagicPassLogToApi(logData: { worker_code: string; timestamp?: string; event_state?: string; device_id?: string }) {
+  try {
+    const res = await fetch(getApiUrl('magicpass_push'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(logData),
+    });
+    return await res.json();
+  } catch (err) {
+    console.warn('MagicPass veri gönderme hatası:', err);
     return { success: false, error: 'Sunucu ile iletişim kurulamadı.' };
   }
 }

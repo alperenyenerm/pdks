@@ -135,7 +135,7 @@ function initDatabaseTables(PDO $pdo) {
             `id` VARCHAR(100) PRIMARY KEY,
             `worker_id` VARCHAR(50) NOT NULL,
             `date` DATE NOT NULL,
-            `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL',
+            `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'REPORT_PAID', 'REPORT_UNPAID', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL',
             `overtime_hours` DECIMAL(4,2) DEFAULT 0.00,
             `overtime_multiplier` DECIMAL(4,2) DEFAULT 1.50,
             `shift` ENUM('DAY', 'NIGHT', 'WEEKEND') DEFAULT 'DAY',
@@ -152,6 +152,16 @@ function initDatabaseTables(PDO $pdo) {
             FOREIGN KEY (`worker_id`) REFERENCES `workers`(`id`) ON DELETE CASCADE,
             FOREIGN KEY (`project_id`) REFERENCES `projects`(`id`) ON DELETE SET NULL,
             FOREIGN KEY (`machinery_id`) REFERENCES `machinery`(`id`) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+        "CREATE TABLE IF NOT EXISTS `magicpass_logs` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `device_id` VARCHAR(100) DEFAULT 'MAGICPASS_01',
+            `worker_code` VARCHAR(50) NOT NULL,
+            `timestamp` DATETIME NOT NULL,
+            `event_state` ENUM('IN', 'OUT', 'CHECK') DEFAULT 'CHECK',
+            `processed` TINYINT(1) DEFAULT 0,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
 
         "CREATE TABLE IF NOT EXISTS `advances` (
@@ -212,7 +222,7 @@ function initDatabaseTables(PDO $pdo) {
 
     // Mevcut attendance tablosunu yeni ENUM değerleri için güncelle
     try {
-        $pdo->exec("ALTER TABLE `attendance` MODIFY COLUMN `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL'");
+        $pdo->exec("ALTER TABLE `attendance` MODIFY COLUMN `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'REPORT_PAID', 'REPORT_UNPAID', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL'");
     } catch (Exception $e) {
         // Ignore if already modified or no permission
     }

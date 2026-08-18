@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { AttendanceType, AttendanceRecord, Worker } from '../../types';
-import { getDaysInMonth, getMonthNameTr, formatCurrency } from '../../utils/calculations';
+import { getDaysInMonth, getMonthNameTr, formatCurrency, calculateOvertimeFromTimes } from '../../utils/calculations';
 import {
   Check,
   Zap,
@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Sun,
   Briefcase,
+  Clock,
 } from 'lucide-react';
 
 import { ShiftRotationModal } from './ShiftRotationModal';
@@ -26,6 +27,7 @@ export const AttendanceMatrix: React.FC = () => {
     monthlySummaries,
     setAttendanceRecord,
     bulkSetAttendance,
+    settings,
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -37,6 +39,8 @@ export const AttendanceMatrix: React.FC = () => {
     worker: Worker;
     day: number;
     record?: AttendanceRecord;
+    checkInTime?: string;
+    checkOutTime?: string;
   } | null>(null);
 
   // Bulk Entry Modal State
@@ -129,8 +133,13 @@ export const AttendanceMatrix: React.FC = () => {
         text = 'İ';
         break;
       case 'REPORT':
+      case 'REPORT_PAID':
         bgClass = 'bg-purple-500/20 text-purple-400 border-purple-500/40 font-bold';
-        text = 'R';
+        text = 'ÜR';
+        break;
+      case 'REPORT_UNPAID':
+        bgClass = 'bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold';
+        text = 'ÜR-';
         break;
       case 'ABSENT':
         bgClass = 'bg-rose-500/20 text-rose-400 border-rose-500/40 font-bold';
@@ -157,21 +166,47 @@ export const AttendanceMatrix: React.FC = () => {
   // Handle cell click
   const handleCellClick = (worker: Worker, day: number) => {
     const rec = getRecordFor(worker.id, day);
-    setEditingCell({ worker, day, record: rec });
+    setEditingCell({
+      worker,
+      day,
+      record: rec,
+      checkInTime: rec?.checkInTime || '08:00',
+      checkOutTime: rec?.checkOutTime || '18:00',
+    });
   };
 
   // Save single cell edit
-  const handleSaveCell = (type: AttendanceType, overtimeHours: number, projectId?: string) => {
+  const handleSaveCell = (
+    type: AttendanceType,
+    overtimeHours: number,
+    projectId?: string,
+    checkInTime?: string,
+    checkOutTime?: string
+  ) => {
     if (!editingCell) return;
     const { worker, day } = editingCell;
     const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const finalCheckIn = checkInTime !== undefined ? checkInTime : editingCell.checkInTime;
+    const finalCheckOut = checkOutTime !== undefined ? checkOutTime : editingCell.checkOutTime;
+
+    // Auto calculate overtime if times modified
+    let finalOvertime = overtimeHours;
+    if (finalCheckIn && finalCheckOut && type !== 'ABSENT') {
+      const autoOt = calculateOvertimeFromTimes(finalCheckIn, finalCheckOut, settings.workingHoursPerDay || 8);
+      if (autoOt > 0 && overtimeHours === 0) {
+        finalOvertime = autoOt;
+      }
+    }
 
     setAttendanceRecord({
       workerId: worker.id,
       date: dateStr,
       type,
-      overtimeHours,
+      overtimeHours: finalOvertime,
       projectId: projectId || undefined,
+      checkInTime: finalCheckIn,
+      checkOutTime: finalCheckOut,
     });
     setEditingCell(null);
   };
@@ -200,7 +235,7 @@ export const AttendanceMatrix: React.FC = () => {
             {getMonthNameTr(selectedMonth)} {selectedYear} Aylık Puantaj Cetveli
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Hafta sonları ücretli tatil (HT) veya mesaili çalışma (HÇ) olarak tek tıkla işlenebilir.
+            Giriş-Çıkış saatleri, ücretli/ücretsiz raporlar ve hafta sonu mesaileri otomatik işlenebilir.
           </p>
         </div>
 
@@ -258,11 +293,14 @@ export const AttendanceMatrix: React.FC = () => {
           <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-amber-400">HÇ</b> Hafta Sonu Çalışması (Mesaili)
           </span>
+          <span className="inline-flex items-center gap-1 bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded font-mono">
+            <b className="text-purple-400">ÜR</b> Ücretli Rapor
+          </span>
+          <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded font-mono">
+            <b className="text-rose-300">ÜR-</b> Ücretsiz Rapor
+          </span>
           <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-amber-300">İ</b> İzinli
-          </span>
-          <span className="inline-flex items-center gap-1 bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded font-mono">
-            <b className="text-purple-400">R</b> Raporlu
           </span>
           <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-rose-400">X</b> Gelmedi
@@ -416,14 +454,14 @@ export const AttendanceMatrix: React.FC = () => {
         </div>
       </div>
 
-      {/* SINGLE CELL EDIT MODAL */}
+      {/* SINGLE CELL EDIT MODAL WITH CHECK IN/OUT */}
       {editingCell && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white">
-                  Puantaj Düzenle: {editingCell.worker.firstName} {editingCell.worker.lastName}
+                  Puantaj & Saat Kaydı: {editingCell.worker.firstName} {editingCell.worker.lastName}
                 </h3>
                 <p className="text-xs text-amber-400 font-mono">
                   Tarih: {editingCell.day} {getMonthNameTr(selectedMonth)} {selectedYear}
@@ -437,6 +475,42 @@ export const AttendanceMatrix: React.FC = () => {
               </button>
             </div>
 
+            {/* Check-In / Check-Out Times */}
+            <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl space-y-2">
+              <label className="text-xs font-semibold text-amber-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <span>Giriş & Çıkış Saatleri (Otomatik Mesai Hesaplama)</span>
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">Giriş Saati</label>
+                  <input
+                    type="time"
+                    value={editingCell.checkInTime || '08:00'}
+                    onChange={(e) => {
+                      const newIn = e.target.value;
+                      const autoOt = calculateOvertimeFromTimes(newIn, editingCell.checkOutTime || '18:00', settings.workingHoursPerDay || 8);
+                      setEditingCell({ ...editingCell, checkInTime: newIn, record: editingCell.record ? { ...editingCell.record, overtimeHours: autoOt } : undefined });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] text-slate-400 block mb-1">Çıkış Saati</label>
+                  <input
+                    type="time"
+                    value={editingCell.checkOutTime || '18:00'}
+                    onChange={(e) => {
+                      const newOut = e.target.value;
+                      const autoOt = calculateOvertimeFromTimes(editingCell.checkInTime || '08:00', newOut, settings.workingHoursPerDay || 8);
+                      setEditingCell({ ...editingCell, checkOutTime: newOut, record: editingCell.record ? { ...editingCell.record, overtimeHours: autoOt } : undefined });
+                    }}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white font-mono focus:border-amber-500"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Quick Status Buttons */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -448,8 +522,9 @@ export const AttendanceMatrix: React.FC = () => {
                   { type: 'HALF', label: 'Yarım Gün (0.5)', color: 'border-blue-500/50 bg-blue-500/10 text-blue-400' },
                   { type: 'WEEKEND', label: 'Hafta Sonu Tatili (HT)', color: 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' },
                   { type: 'WEEKEND_WORK', label: 'Hafta Sonu Çalışması (HÇ)', color: 'border-amber-500/50 bg-amber-500/10 text-amber-400' },
+                  { type: 'REPORT_PAID', label: 'Ücretli Rapor (ÜR)', color: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
+                  { type: 'REPORT_UNPAID', label: 'Ücretsiz Rapor (ÜR-)', color: 'border-rose-500/50 bg-rose-500/10 text-rose-300' },
                   { type: 'LEAVE', label: 'İzinli (İ)', color: 'border-amber-500/30 bg-amber-500/5 text-amber-300' },
-                  { type: 'REPORT', label: 'Raporlu (R)', color: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
                   { type: 'ABSENT', label: 'Gelmedi (X)', color: 'border-rose-500/50 bg-rose-500/10 text-rose-400' },
                 ].map((item) => {
                   const isSelected = (editingCell.record?.type || 'FULL') === item.type;
@@ -460,7 +535,9 @@ export const AttendanceMatrix: React.FC = () => {
                         handleSaveCell(
                           item.type as AttendanceType,
                           editingCell.record?.overtimeHours || (item.type === 'WEEKEND_WORK' ? 8 : 0),
-                          editingCell.record?.projectId
+                          editingCell.record?.projectId,
+                          editingCell.checkInTime,
+                          editingCell.checkOutTime
                         )
                       }
                       className={`p-2.5 rounded-xl border text-xs font-bold text-left transition flex items-center justify-between ${item.color} ${
@@ -493,7 +570,9 @@ export const AttendanceMatrix: React.FC = () => {
                       handleSaveCell(
                         editingCell.record?.type || 'FULL',
                         hrs,
-                        editingCell.record?.projectId
+                        editingCell.record?.projectId,
+                        editingCell.checkInTime,
+                        editingCell.checkOutTime
                       )
                     }
                     className={`py-2 rounded-xl border text-xs font-bold font-mono transition ${
@@ -519,7 +598,9 @@ export const AttendanceMatrix: React.FC = () => {
                   handleSaveCell(
                     editingCell.record?.type || 'FULL',
                     editingCell.record?.overtimeHours || 0,
-                    e.target.value
+                    e.target.value,
+                    editingCell.checkInTime,
+                    editingCell.checkOutTime
                   )
                 }
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
@@ -584,8 +665,9 @@ export const AttendanceMatrix: React.FC = () => {
                   <option value="HALF">Yarım Gün (0.5)</option>
                   <option value="WEEKEND">Hafta Sonu Tatili (HT - Ücretli)</option>
                   <option value="WEEKEND_WORK">Hafta Sonu Çalışması (HÇ - Mesaili)</option>
+                  <option value="REPORT_PAID">Ücretli Rapor (ÜR)</option>
+                  <option value="REPORT_UNPAID">Ücretsiz Rapor (ÜR-)</option>
                   <option value="LEAVE">İzinli (İ)</option>
-                  <option value="REPORT">Raporlu (R)</option>
                   <option value="ABSENT">Gelmedi (X)</option>
                 </select>
               </div>
