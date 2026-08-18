@@ -44,7 +44,29 @@ try {
         // 2. TÜM VERİLERİ GETİR (ALL-DATA)
         // ==========================================
         case 'all_data':
-            $settingsStmt = $pdo->query("SELECT * FROM company_settings LIMIT 1");
+            $settingsStmt = $pdo->query("SELECT 
+                company_name as companyName,
+                title,
+                phone,
+                address,
+                tax_no as taxNo,
+                default_overtime_multiplier as defaultOvertimeMultiplier,
+                sunday_overtime_multiplier as sundayOvertimeMultiplier,
+                holiday_overtime_multiplier as holidayOvertimeMultiplier,
+                working_hours_per_day as workingHoursPerDay,
+                default_meal_allowance as defaultMealAllowance,
+                default_transport_allowance as defaultTransportAllowance,
+                max_weekly_overtime_limit as maxWeeklyOvertimeHoursLimit,
+                night_shift_multiplier_percent as nightShiftMultiplierPercent,
+                sgk_worker_percent as sgkWorkerPercent,
+                unemployment_worker_percent as unemploymentWorkerPercent,
+                income_tax_percent as incomeTaxPercent,
+                stamp_tax_percent as stampTaxPercent,
+                enable_automatic_taxes as enableAutomaticTaxes,
+                active_currency as activeCurrency,
+                exchange_rate_usd as exchangeRateUSD,
+                exchange_rate_eur as exchangeRateEUR
+            FROM company_settings LIMIT 1");
             $settings = $settingsStmt->fetch();
 
             $workersStmt = $pdo->query("SELECT id, code, first_name as firstName, last_name as lastName, role, daily_rate as dailyRate, overtime_hourly_rate as overtimeHourlyRate, phone, iban, department, branch_id as branchId, status, start_date as startDate, tc_no as tcNo, skill_level as skillLevel, avatar_color as avatarColor, notes FROM workers");
@@ -377,6 +399,11 @@ try {
                 working_hours_per_day = :working_hours_per_day,
                 default_meal_allowance = :default_meal_allowance,
                 default_transport_allowance = :default_transport_allowance,
+                sgk_worker_percent = :sgk_worker_percent,
+                unemployment_worker_percent = :unemployment_worker_percent,
+                income_tax_percent = :income_tax_percent,
+                stamp_tax_percent = :stamp_tax_percent,
+                enable_automatic_taxes = :enable_automatic_taxes,
                 active_currency = :active_currency,
                 exchange_rate_usd = :exchange_rate_usd,
                 exchange_rate_eur = :exchange_rate_eur
@@ -394,6 +421,11 @@ try {
                 ':working_hours_per_day' => $s['workingHoursPerDay'],
                 ':default_meal_allowance' => $s['defaultMealAllowance'],
                 ':default_transport_allowance' => $s['defaultTransportAllowance'],
+                ':sgk_worker_percent' => isset($s['sgkWorkerPercent']) ? $s['sgkWorkerPercent'] : 14.0,
+                ':unemployment_worker_percent' => isset($s['unemploymentWorkerPercent']) ? $s['unemploymentWorkerPercent'] : 1.0,
+                ':income_tax_percent' => isset($s['incomeTaxPercent']) ? $s['incomeTaxPercent'] : 15.0,
+                ':stamp_tax_percent' => isset($s['stampTaxPercent']) ? $s['stampTaxPercent'] : 0.759,
+                ':enable_automatic_taxes' => isset($s['enableAutomaticTaxes']) ? ($s['enableAutomaticTaxes'] ? 1 : 0) : 1,
                 ':active_currency' => isset($s['activeCurrency']) ? $s['activeCurrency'] : 'TRY',
                 ':exchange_rate_usd' => isset($s['exchangeRateUSD']) ? $s['exchangeRateUSD'] : 36.5,
                 ':exchange_rate_eur' => isset($s['exchangeRateEUR']) ? $s['exchangeRateEUR'] : 39.8

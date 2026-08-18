@@ -66,6 +66,12 @@ function initDatabaseTables(PDO $pdo) {
             `default_meal_allowance` DECIMAL(10,2) DEFAULT 150.00,
             `default_transport_allowance` DECIMAL(10,2) DEFAULT 80.00,
             `max_weekly_overtime_limit` INT DEFAULT 45,
+            `night_shift_multiplier_percent` INT DEFAULT 20,
+            `sgk_worker_percent` DECIMAL(5,2) DEFAULT 14.00,
+            `unemployment_worker_percent` DECIMAL(5,2) DEFAULT 1.00,
+            `income_tax_percent` DECIMAL(5,2) DEFAULT 15.00,
+            `stamp_tax_percent` DECIMAL(5,3) DEFAULT 0.759,
+            `enable_automatic_taxes` TINYINT(1) DEFAULT 1,
             `active_currency` VARCHAR(10) DEFAULT 'TRY',
             `exchange_rate_usd` DECIMAL(10,4) DEFAULT 36.5000,
             `exchange_rate_eur` DECIMAL(10,4) DEFAULT 39.8000,
@@ -223,6 +229,11 @@ function initDatabaseTables(PDO $pdo) {
     // Mevcut attendance tablosunu yeni ENUM değerleri için güncelle
     try {
         $pdo->exec("ALTER TABLE `attendance` MODIFY COLUMN `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'REPORT_PAID', 'REPORT_UNPAID', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL'");
+        $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `sgk_worker_percent` DECIMAL(5,2) DEFAULT 14.00");
+        $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `unemployment_worker_percent` DECIMAL(5,2) DEFAULT 1.00");
+        $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `income_tax_percent` DECIMAL(5,2) DEFAULT 15.00");
+        $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `stamp_tax_percent` DECIMAL(5,3) DEFAULT 0.759");
+        $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `enable_automatic_taxes` TINYINT(1) DEFAULT 1");
     } catch (Exception $e) {
         // Ignore if already modified or no permission
     }

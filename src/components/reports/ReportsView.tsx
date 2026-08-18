@@ -133,12 +133,18 @@ export const ReportsView: React.FC = () => {
   const calculateDetailedPayslip = (summary: typeof selectedSummary) => {
     if (!summary) return null;
 
+    const enableTaxes = settings.enableAutomaticTaxes ?? true;
+    const sgkRate = (settings.sgkWorkerPercent ?? 14) / 100;
+    const unempRate = (settings.unemploymentWorkerPercent ?? 1) / 100;
+    const incomeRate = (settings.incomeTaxPercent ?? 15) / 100;
+    const stampRate = (settings.stampTaxPercent ?? 0.759) / 100;
+
     const gross = summary.totalGrossEarnings;
-    const sgkWorker = gross * 0.14; // SGK %14
-    const unemploymentWorker = gross * 0.01; // İşsizlik %1
+    const sgkWorker = enableTaxes ? gross * sgkRate : 0;
+    const unemploymentWorker = enableTaxes ? gross * unempRate : 0;
     const taxBase = gross - (sgkWorker + unemploymentWorker);
-    const incomeTax = taxBase * 0.15; // Gelir vergisi %15
-    const stampTax = gross * 0.00759; // Damga vergisi %0.759
+    const incomeTax = enableTaxes ? taxBase * incomeRate : 0;
+    const stampTax = enableTaxes ? gross * stampRate : 0;
     const totalTaxesAndSSI = sgkWorker + unemploymentWorker + incomeTax + stampTax;
 
     const totalDeductionsAll = totalTaxesAndSSI + summary.totalAdvancesPaid + summary.totalDeductions;
@@ -573,28 +579,28 @@ export const ReportsView: React.FC = () => {
                   <table className="w-full text-left border-collapse">
                     <tbody className="divide-y divide-slate-800 print:divide-black text-slate-300 print:text-black">
                       <tr>
-                        <td className="py-2 px-3 text-[11px]">SGK İşçi Payı Kesintisi (%14)</td>
+                        <td className="py-2 px-3 text-[11px]">SGK İşçi Payı Kesintisi (%{settings.sgkWorkerPercent ?? 14})</td>
                         <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-black">
                           -{formatCurrency(detailedTax.sgkWorker)}
                         </td>
                       </tr>
 
                       <tr>
-                        <td className="py-2 px-3 text-[11px]">İşsizlik Sigortası Payı (%1)</td>
+                        <td className="py-2 px-3 text-[11px]">İşsizlik Sigortası Payı (%{settings.unemploymentWorkerPercent ?? 1})</td>
                         <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-black">
                           -{formatCurrency(detailedTax.unemploymentWorker)}
                         </td>
                       </tr>
 
                       <tr>
-                        <td className="py-2 px-3 text-[11px]">Gelir Vergisi Kesintisi (%15)</td>
+                        <td className="py-2 px-3 text-[11px]">Gelir Vergisi Kesintisi (%{settings.incomeTaxPercent ?? 15})</td>
                         <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-black">
                           -{formatCurrency(detailedTax.incomeTax)}
                         </td>
                       </tr>
 
                       <tr>
-                        <td className="py-2 px-3 text-[11px]">Damga Vergisi (%0.759)</td>
+                        <td className="py-2 px-3 text-[11px]">Damga Vergisi (%{settings.stampTaxPercent ?? 0.759})</td>
                         <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-black">
                           -{formatCurrency(detailedTax.stampTax)}
                         </td>

@@ -143,6 +143,11 @@ export interface CompanySettings {
   defaultTransportAllowance: number; // 80 ₺
   maxWeeklyOvertimeHoursLimit: number; // 45 saat yasal sınır
   nightShiftMultiplierPercent?: number; // %20 Gece vardiya primi
+  sgkWorkerPercent?: number; // %14 SGK işçi payı
+  unemploymentWorkerPercent?: number; // %1 İşsizlik sigortası payı
+  incomeTaxPercent?: number; // %15 Gelir vergisi dilimi
+  stampTaxPercent?: number; // %0.759 Damga vergisi
+  enableAutomaticTaxes?: boolean; // Yasal kesintileri göster/hesapla
   activeCurrency: CurrencyCode;
   exchangeRateUSD: number; // ₺/USD
   exchangeRateEUR: number; // ₺/EUR
