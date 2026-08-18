@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { changePasswordApi } from '../../utils/apiClient';
 import {
   Settings,
   Download,
@@ -8,19 +9,50 @@ import {
   Save,
   CheckCircle2,
   Trash2,
+  KeyRound,
+  ShieldAlert,
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
-  const { settings, updateSettings, exportBackup, importBackup, resetDemoData, clearAllData } = useApp();
+  const { settings, updateSettings, exportBackup, importBackup, resetDemoData, clearAllData, currentUser } = useApp();
 
   const [formData, setFormData] = useState({ ...settings });
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const [passData, setPassData] = useState({
+    username: currentUser?.username || 'admin',
+    newUsername: currentUser?.username || 'admin',
+    oldPassword: '',
+    newPassword: '',
+  });
+  const [passMsg, setPassMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     updateSettings(formData);
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!passData.newPassword) {
+      setPassMsg({ type: 'error', text: 'Lütfen yeni şifrenizi girin.' });
+      return;
+    }
+    const res = await changePasswordApi({
+      username: passData.username,
+      newUsername: passData.newUsername,
+      oldPassword: passData.oldPassword,
+      newPassword: passData.newPassword,
+    });
+    if (res.success) {
+      setPassMsg({ type: 'success', text: 'Giriş bilgileriniz başarıyla güncellendi!' });
+      setPassData({ ...passData, oldPassword: '', newPassword: '' });
+      setTimeout(() => setPassMsg(null), 4000);
+    } else {
+      setPassMsg({ type: 'error', text: res.error || 'Şifre değiştirilemedi!' });
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,16 +81,88 @@ export const SettingsView: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-white">Sistem & Şirket Ayarları</h2>
           <p className="text-xs text-slate-400">
-            Firma bilgileri, fazla mesai katsayıları ve veri yedekleme yönetimi
+            Firma bilgileri, güvenlik şifresi, fazla mesai katsayıları ve yedekleme yönetimi
           </p>
         </div>
+      </div>
+
+      {/* Password & Security Card */}
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider flex items-center space-x-2">
+            <KeyRound className="w-4 h-4 text-amber-400" />
+            <span>1. Yönetici Giriş Adı & Şifre Değiştirme</span>
+          </h3>
+          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">
+            Aktif Kullanıcı: {currentUser?.username || 'admin'}
+          </span>
+        </div>
+
+        {passMsg && (
+          <div
+            className={`p-3 rounded-xl text-xs font-semibold flex items-center space-x-2 ${
+              passMsg.type === 'success'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+            }`}
+          >
+            <ShieldAlert className="w-4 h-4 shrink-0" />
+            <span>{passMsg.text}</span>
+          </div>
+        )}
+
+        <form onSubmit={handlePasswordChange} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Yeni Kullanıcı Adı</label>
+            <input
+              type="text"
+              required
+              value={passData.newUsername}
+              onChange={(e) => setPassData({ ...passData, newUsername: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Mevcut Şifre</label>
+            <input
+              type="password"
+              placeholder="Varsayılan: admin"
+              value={passData.oldPassword}
+              onChange={(e) => setPassData({ ...passData, oldPassword: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Yeni Şifre</label>
+            <input
+              type="password"
+              required
+              placeholder="Yeni şifreniz"
+              value={passData.newPassword}
+              onChange={(e) => setPassData({ ...passData, newPassword: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div className="sm:col-span-3 flex justify-end">
+            <button
+              type="submit"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-md flex items-center space-x-2"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              <span>Giriş Bilgilerini Güncelle</span>
+            </button>
+          </div>
+        </form>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Company Info */}
         <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
           <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider">
-            1. Firma Künye & İletişim Bilgileri
+            2. Firma Künye & İletişim Bilgileri
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -117,7 +221,7 @@ export const SettingsView: React.FC = () => {
         {/* Calculation Rates */}
         <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
           <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider">
-            2. Mesai Katsayıları & Standart Haklar
+            3. Mesai Katsayıları & Standart Haklar
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -219,7 +323,7 @@ export const SettingsView: React.FC = () => {
       {/* Backup & Restore */}
       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
         <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider">
-          3. Veritabanı, Sıfırlama & Yedekleme İşlemleri
+          4. Veritabanı, Sıfırlama & Yedekleme İşlemleri
         </h3>
         <p className="text-xs text-slate-400">
           Tüm verileriniz MySQL veritabanınızda ve tarayıcı yerel hafızasında saklanır.

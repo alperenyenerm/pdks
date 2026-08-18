@@ -15,6 +15,7 @@ import { AuditLogsView } from './components/audit/AuditLogsView';
 import { PerformanceView } from './components/performance/PerformanceView';
 import { BranchManagement } from './components/branches/BranchManagement';
 import { ISGView } from './components/isg/ISGView';
+import { LoginView } from './components/auth/LoginView';
 import { ToastNotificationContainer } from './components/ui/ToastNotification';
 
 const MainContent: React.FC = () => {
@@ -59,12 +60,24 @@ const ToastWrapper: React.FC = () => {
   return <ToastNotificationContainer toasts={toasts} onDismiss={dismissToast} />;
 };
 
+const AppContainer: React.FC = () => {
+  const { isAuthenticated, loginUser } = useApp();
+
+  if (!isAuthenticated) {
+    return <LoginView onLoginSuccess={loginUser} />;
+  }
+
+  return (
+    <Layout>
+      <MainContent />
+    </Layout>
+  );
+};
+
 export function App() {
   return (
     <AppProvider>
-      <Layout>
-        <MainContent />
-      </Layout>
+      <AppContainer />
       <ToastWrapper />
     </AppProvider>
   );

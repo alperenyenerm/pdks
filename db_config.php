@@ -194,6 +194,15 @@ function initDatabaseTables(PDO $pdo) {
             `category` ENUM('PUANTAJ', 'AVANS', 'PERSONEL', 'PROJE', 'AYARLAR') NOT NULL,
             `details` TEXT,
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+        "CREATE TABLE IF NOT EXISTS `users` (
+            `id` INT AUTO_INCREMENT PRIMARY KEY,
+            `username` VARCHAR(100) NOT NULL UNIQUE,
+            `password_hash` VARCHAR(255) NOT NULL,
+            `full_name` VARCHAR(150) NOT NULL DEFAULT 'YNR Sistem Yöneticisi',
+            `role` ENUM('ADMIN', 'OPERATOR') DEFAULT 'ADMIN',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
     ];
 
@@ -206,5 +215,13 @@ function initDatabaseTables(PDO $pdo) {
     if ($checkSettings == 0) {
         $pdo->exec("INSERT INTO `company_settings` (id, company_name, title, phone, address, tax_no) 
                     VALUES (1, 'YNR MAKİNE SAN. VE TİC. LTD. ŞTİ.', 'Endüstriyel Makine İmalatı & Otomasyon Sistemleri', '+90 (212) 555 96 70', 'İkitelli OSB Sanayi Sitesi No:42 Başakşehir / İstanbul', '9840123982 / İkitelli V.D.');");
+    }
+
+    // Varsayılan admin kullanıcısı yoksa ekle (Kullanıcı Adı: admin, Şifre: admin)
+    $checkUsers = $pdo->query("SELECT COUNT(*) FROM `users`")->fetchColumn();
+    if ($checkUsers == 0) {
+        $defaultHash = password_hash('admin', PASSWORD_DEFAULT);
+        $stmt = $pdo->prepare("INSERT INTO `users` (username, password_hash, full_name, role) VALUES ('admin', :hash, 'YNR Sistem Yöneticisi', 'ADMIN')");
+        $stmt->execute([':hash' => $defaultHash]);
     }
 }

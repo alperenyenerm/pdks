@@ -44,7 +44,20 @@ import {
   clearAllDataFromApi,
 } from '../utils/apiClient';
 
+interface UserSession {
+  id: any;
+  username: string;
+  fullName: string;
+  role: string;
+}
+
 interface AppContextType {
+  // Auth state
+  currentUser: UserSession | null;
+  isAuthenticated: boolean;
+  loginUser: (user: UserSession) => void;
+  logoutUser: () => void;
+
   workers: Worker[];
   attendance: AttendanceRecord[];
   advances: AdvancePayment[];
@@ -116,6 +129,18 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const initial = loadStoredData();
+  const [currentUser, setCurrentUser] = useState<UserSession | null>(() => {
+    const saved = localStorage.getItem('ynr_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  });
+
   const [workers, setWorkers] = useState<Worker[]>(initial.workers);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>(initial.attendance);
   const [advances, setAdvances] = useState<AdvancePayment[]>(initial.advances);
@@ -131,6 +156,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedMonth, setSelectedMonth] = useState<number>(8);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [toasts, setToasts] = useState<NotificationToast[]>([]);
+
+  const loginUser = (user: UserSession) => {
+    setCurrentUser(user);
+    localStorage.setItem('ynr_session', JSON.stringify(user));
+    notify('Giriş Başarılı', `Hoş geldiniz, ${user.fullName}.`, 'success');
+  };
+
+  const logoutUser = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('ynr_session');
+    notify('Oturum Kapatıldı', 'Güvenli çıkış yapıldı.', 'info');
+  };
 
   // PHP MySQL API'sinden Verileri Yükle
   useEffect(() => {
@@ -161,7 +198,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newLog: AuditLog = {
       id: `log-${Date.now()}`,
       timestamp,
-      user: 'YNR Sistem Yöneticisi',
+      user: currentUser ? currentUser.fullName : 'YNR Sistem Yöneticisi',
       action,
       category,
       details,
@@ -408,6 +445,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider
       value={{
+        currentUser,
+        isAuthenticated: !!currentUser,
+        loginUser,
+        logoutUser,
         workers,
         attendance,
         advances,

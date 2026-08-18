@@ -165,3 +165,36 @@ export async function clearAllDataFromApi() {
     console.warn('Tüm verileri temizleme uyarısı:', err);
   }
 }
+
+export async function loginToApi(credentials: { username: string; password: string }) {
+  try {
+    const res = await fetch(getApiUrl('login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    return await res.json();
+  } catch (err) {
+    // Fallback if offline/demo
+    if (credentials.username === 'admin' && credentials.password === 'admin') {
+      return {
+        success: true,
+        user: { id: 1, username: 'admin', fullName: 'YNR Sistem Yöneticisi', role: 'ADMIN' },
+      };
+    }
+    return { success: false, error: 'Sunucu ile iletişim kurulamadı.' };
+  }
+}
+
+export async function changePasswordApi(data: { username?: string; oldPassword?: string; newPassword?: string; newUsername?: string }) {
+  try {
+    const res = await fetch(getApiUrl('change_password'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return await res.json();
+  } catch (err) {
+    return { success: false, error: 'Sunucu ile iletişim kurulamadı.' };
+  }
+}

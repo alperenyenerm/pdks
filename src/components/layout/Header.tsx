@@ -10,8 +10,9 @@ import {
   Users,
   TrendingDown,
   PlusCircle,
-  Download,
   Building2,
+  LogOut,
+  UserCheck,
 } from 'lucide-react';
 
 import { MySQLStatusBadge } from '../ui/MySQLStatusBadge';
@@ -24,7 +25,8 @@ export const Header: React.FC = () => {
     setSelectedMonth,
     monthlySummaries,
     setActiveTab,
-    exportBackup,
+    currentUser,
+    logoutUser,
   } = useApp();
 
   const handlePrevMonth = () => {
@@ -106,7 +108,7 @@ export const Header: React.FC = () => {
             <MySQLStatusBadge />
           </div>
 
-          {/* Center / Right: Key Metric Cards (No text overflow) */}
+          {/* Center / Right: Key Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full xl:w-auto">
             
             {/* Active Workers */}
@@ -163,7 +165,7 @@ export const Header: React.FC = () => {
 
           </div>
 
-          {/* Far Right: Header Action Buttons */}
+          {/* Far Right: Header Action Buttons & User Profile / Logout */}
           <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
             <button
               onClick={() => setActiveTab('attendance')}
@@ -172,13 +174,22 @@ export const Header: React.FC = () => {
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Puantaj Gir</span>
             </button>
+
+            {/* User Profile Badge */}
+            {currentUser && (
+              <div className="hidden md:flex items-center space-x-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-slate-300">
+                <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="font-bold text-white font-mono">{currentUser.username}</span>
+              </div>
+            )}
+
             <button
-              onClick={exportBackup}
-              className="flex items-center justify-center space-x-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold px-3 py-2 rounded-xl text-xs transition whitespace-nowrap"
-              title="Verileri İndir / Yedekle"
+              onClick={logoutUser}
+              className="flex items-center justify-center space-x-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2.5 py-2 rounded-xl text-xs transition whitespace-nowrap"
+              title="Güvenli Çıkış Yap"
             >
-              <Download className="w-3.5 h-3.5 text-amber-400" />
-              <span>Yedekle</span>
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Çıkış</span>
             </button>
           </div>
 
