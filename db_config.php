@@ -135,7 +135,7 @@ function initDatabaseTables(PDO $pdo) {
             `id` VARCHAR(100) PRIMARY KEY,
             `worker_id` VARCHAR(50) NOT NULL,
             `date` DATE NOT NULL,
-            `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'ABSENT') NOT NULL DEFAULT 'FULL',
+            `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL',
             `overtime_hours` DECIMAL(4,2) DEFAULT 0.00,
             `overtime_multiplier` DECIMAL(4,2) DEFAULT 1.50,
             `shift` ENUM('DAY', 'NIGHT', 'WEEKEND') DEFAULT 'DAY',
@@ -208,6 +208,13 @@ function initDatabaseTables(PDO $pdo) {
 
     foreach ($tables as $sql) {
         $pdo->exec($sql);
+    }
+
+    // Mevcut attendance tablosunu yeni ENUM değerleri için güncelle
+    try {
+        $pdo->exec("ALTER TABLE `attendance` MODIFY COLUMN `type` ENUM('FULL', 'HALF', 'LEAVE', 'REPORT', 'ABSENT', 'WEEKEND', 'WEEKEND_WORK') NOT NULL DEFAULT 'FULL'");
+    } catch (Exception $e) {
+        // Ignore if already modified or no permission
     }
 
     // Varsayılan şirket ayarları yoksa ekle

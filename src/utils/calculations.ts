@@ -41,11 +41,16 @@ export const calculateWorkerMonthlySummary = (
   let leaveDays = 0;
   let reportDays = 0;
   let absentDays = 0;
+  let weekendDays = 0;
+  let weekendWorkDays = 0;
   let totalOvertimeHours = 0;
   let overtimeEarnings = 0;
   let totalMealAllowances = 0;
   let totalTransportAllowances = 0;
   let nightShiftDays = 0;
+
+  const defaultOvertimeMultiplier = settings?.defaultOvertimeMultiplier || 1.5;
+  const sundayMultiplier = settings?.sundayOvertimeMultiplier || 2.0;
 
   workerAttendance.forEach((rec) => {
     switch (rec.type) {
@@ -64,23 +69,40 @@ export const calculateWorkerMonthlySummary = (
       case 'ABSENT':
         absentDays += 1;
         break;
+      case 'WEEKEND':
+        weekendDays += 1;
+        break;
+      case 'WEEKEND_WORK':
+        weekendWorkDays += 1;
+        break;
     }
 
     if (rec.shift === 'NIGHT' || rec.shift === 'SHIFT_3') nightShiftDays += 1;
 
-    const multiplier = rec.overtimeMultiplier || (settings?.defaultOvertimeMultiplier || 1.5);
-    const hrs = rec.overtimeHours || 0;
-    totalOvertimeHours += hrs;
-    
-    // Hourly rate * hours * multiplier ratio
-    const baseHourly = worker.overtimeHourlyRate / 1.5; // Base hourly rate
-    overtimeEarnings += hrs * baseHourly * multiplier;
+    // Determine overtime hours & multiplier for weekend work
+    let hrs = rec.overtimeHours || 0;
+    let multiplier = rec.overtimeMultiplier || defaultOvertimeMultiplier;
+
+    if (rec.type === 'WEEKEND_WORK') {
+      multiplier = rec.overtimeMultiplier || sundayMultiplier;
+      // If weekend work recorded without explicit extra overtime hours, treat 8 hours work as weekend overtime
+      if (hrs === 0) {
+        hrs = settings?.workingHoursPerDay || 8;
+      }
+    }
+
+    if (hrs > 0) {
+      totalOvertimeHours += hrs;
+      const baseHourly = worker.overtimeHourlyRate / 1.5; // Base hourly wage
+      overtimeEarnings += hrs * baseHourly * multiplier;
+    }
 
     totalMealAllowances += rec.mealAllowance || 0;
     totalTransportAllowances += rec.transportAllowance || 0;
   });
 
-  const totalWorkedDaysEquivalent = fullDays + halfDays * 0.5;
+  // Equivalent paid days: FULL + HALF*0.5 + WEEKEND + WEEKEND_WORK
+  const totalWorkedDaysEquivalent = fullDays + halfDays * 0.5 + weekendDays + weekendWorkDays;
   const baseWageEarnings = totalWorkedDaysEquivalent * worker.dailyRate;
   
   const nightShiftPercent = (settings?.nightShiftMultiplierPercent || 20) / 100;
@@ -116,6 +138,8 @@ export const calculateWorkerMonthlySummary = (
     leaveDays,
     reportDays,
     absentDays,
+    weekendDays,
+    weekendWorkDays,
     totalWorkedDaysEquivalent,
     totalOvertimeHours,
     nightShiftDays,

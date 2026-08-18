@@ -1,4 +1,4 @@
-export type AttendanceType = 'FULL' | 'HALF' | 'LEAVE' | 'REPORT' | 'ABSENT';
+export type AttendanceType = 'FULL' | 'HALF' | 'LEAVE' | 'REPORT' | 'ABSENT' | 'WEEKEND' | 'WEEKEND_WORK';
 export type ShiftType = 'DAY' | 'NIGHT' | 'WEEKEND' | 'SHIFT_1' | 'SHIFT_2' | 'SHIFT_3';
 export type CurrencyCode = 'TRY' | 'USD' | 'EUR';
 
@@ -29,7 +29,7 @@ export interface AttendanceRecord {
   date: string; // YYYY-MM-DD
   type: AttendanceType;
   overtimeHours: number;
-  overtimeMultiplier?: number; // 1.5x, 2.0x (Pazar), 2.5x (Resmi Tatil)
+  overtimeMultiplier?: number; // 1.5x, 2.0x (Pazar/Haftasonu), 2.5x (Resmi Tatil)
   shift?: ShiftType;
   projectId?: string;
   machineryId?: string; // Makine / Tezgah No
@@ -135,6 +135,8 @@ export interface MonthlyWorkerSummary {
   leaveDays: number;
   reportDays: number;
   absentDays: number;
+  weekendDays: number; // Hafta Sonu Ücretli Tatil (HT)
+  weekendWorkDays: number; // Hafta Sonu Mesaili Çalışma (HÇ)
   totalWorkedDaysEquivalent: number;
   totalOvertimeHours: number;
   nightShiftDays: number;
@@ -155,10 +157,10 @@ export interface MonthlyWorkerSummary {
 export interface ISGEquipment {
   id: string;
   workerId: string;
-  equipmentName: string; // e.g. "Çelik Burunlu İş Ayakkabısı (42 Numara)"
+  equipmentName: string;
   category: 'AYAKKABI' | 'BARET' | 'MASKE' | 'ELBİSE' | 'KULAKLIK' | 'ELDİVEN' | 'GÖZLÜK';
-  issueDate: string; // YYYY-MM-DD
-  expiryDate: string; // YYYY-MM-DD
+  issueDate: string;
+  expiryDate: string;
   status: 'VALID' | 'WARNING' | 'EXPIRED';
   sizeOrSerial?: string;
   signedByWorker: boolean;
@@ -167,8 +169,8 @@ export interface ISGEquipment {
 export interface ISGCertificate {
   id: string;
   workerId: string;
-  certificateName: string; // e.g. "Gazaltı Kaynakçı Yeterlilik Sertifikası"
-  issuingInstitution: string; // e.g. "TSE / MYK"
+  certificateName: string;
+  issuingInstitution: string;
   issueDate: string;
   expiryDate: string;
   status: 'VALID' | 'WARNING' | 'EXPIRED';

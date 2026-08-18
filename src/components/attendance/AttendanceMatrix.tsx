@@ -7,13 +7,14 @@ import {
   Zap,
   Search,
   X,
-  Printer,
   Calendar as CalendarIcon,
   ChevronDown,
+  RefreshCw,
+  Sun,
+  Briefcase,
 } from 'lucide-react';
 
 import { ShiftRotationModal } from './ShiftRotationModal';
-import { RefreshCw } from 'lucide-react';
 
 export const AttendanceMatrix: React.FC = () => {
   const {
@@ -25,7 +26,6 @@ export const AttendanceMatrix: React.FC = () => {
     monthlySummaries,
     setAttendanceRecord,
     bulkSetAttendance,
-    setActiveTab,
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,6 +67,33 @@ export const AttendanceMatrix: React.FC = () => {
     return attendance.find((r) => r.workerId === workerId && r.date === dateStr);
   };
 
+  // Quick fill weekends as REST (HT) or WORK (HÇ)
+  const handleFillWeekends = (type: 'WEEKEND' | 'WEEKEND_WORK') => {
+    const newRecords: AttendanceRecord[] = [];
+    
+    daysArray.forEach((day) => {
+      const dateObj = new Date(selectedYear, selectedMonth - 1, day);
+      const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6; // Sunday or Saturday
+      if (isWeekend) {
+        const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        activeWorkers.forEach((w) => {
+          newRecords.push({
+            id: `att-${w.id}-${dateStr}`,
+            workerId: w.id,
+            date: dateStr,
+            type,
+            overtimeHours: type === 'WEEKEND_WORK' ? 8 : 0,
+            overtimeMultiplier: 2.0,
+          });
+        });
+      }
+    });
+
+    if (newRecords.length > 0) {
+      bulkSetAttendance(newRecords);
+    }
+  };
+
   // Cell status styling & labels
   const getStatusBadge = (rec?: AttendanceRecord) => {
     if (!rec) {
@@ -88,6 +115,14 @@ export const AttendanceMatrix: React.FC = () => {
       case 'HALF':
         bgClass = 'bg-blue-500/20 text-blue-400 border-blue-500/40 font-bold';
         text = '½';
+        break;
+      case 'WEEKEND':
+        bgClass = 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40 font-bold';
+        text = 'HT';
+        break;
+      case 'WEEKEND_WORK':
+        bgClass = 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold ring-1 ring-amber-400/40';
+        text = 'HÇ';
         break;
       case 'LEAVE':
         bgClass = 'bg-amber-500/20 text-amber-400 border-amber-500/40 font-bold';
@@ -165,59 +200,72 @@ export const AttendanceMatrix: React.FC = () => {
             {getMonthNameTr(selectedMonth)} {selectedYear} Aylık Puantaj Cetveli
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Hücrelere tıklayarak puantaj veya mesai saati yazabilir, toplu giriş yapabilirsiniz.
+            Hafta sonları ücretli tatil (HT) veya mesaili çalışma (HÇ) olarak tek tıkla işlenebilir.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <button
-            onClick={() => setIsRotationModalOpen(true)}
-            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition"
+            onClick={() => handleFillWeekends('WEEKEND')}
+            className="flex items-center space-x-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-2 rounded-xl text-xs font-semibold transition"
+            title="Aydaki tüm hafta sonlarını Ücretli Tatil (HT) olarak doldurur"
           >
-            <RefreshCw className="w-4 h-4 text-amber-400" />
-            <span>Aylık Vardiya Dönüşü Planla</span>
+            <Sun className="w-3.5 h-3.5 text-indigo-400" />
+            <span>Hafta Sonları Tatil (HT)</span>
+          </button>
+
+          <button
+            onClick={() => handleFillWeekends('WEEKEND_WORK')}
+            className="flex items-center space-x-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-2 rounded-xl text-xs font-semibold transition"
+            title="Aydaki tüm hafta sonlarını Mesaili Çalışma (HÇ) olarak doldurur"
+          >
+            <Briefcase className="w-3.5 h-3.5 text-amber-400" />
+            <span>Hafta Sonları Çalışma (HÇ)</span>
+          </button>
+
+          <button
+            onClick={() => setIsRotationModalOpen(true)}
+            className="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-3 py-2 rounded-xl text-xs transition"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <span>Vardiya Planla</span>
           </button>
 
           <button
             onClick={() => setIsBulkOpen(true)}
-            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-lg shadow-amber-500/20"
+            className="flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-md"
           >
             <Zap className="w-4 h-4" />
-            <span>Toplu Puantaj Gir</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('reports')}
-            className="flex-1 sm:flex-initial flex items-center justify-center space-x-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold px-4 py-2 rounded-xl text-xs transition"
-          >
-            <Printer className="w-4 h-4 text-amber-400" />
-            <span>Yazdır / PDF</span>
+            <span>Toplu Giriş Yap</span>
           </button>
         </div>
       </div>
 
-      {/* Legend & Filters Bar */}
+      {/* Filter & Legend */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 bg-slate-900/50 border border-slate-800/80 p-4 rounded-xl">
         {/* Status Legend */}
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          <span className="text-slate-400 font-medium">İşaretler:</span>
-          <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-1 rounded-md font-mono">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-400 font-medium">Kategoriler:</span>
+          <span className="inline-flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-emerald-400">1</b> Tam Gün
           </span>
-          <span className="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-1 rounded-md font-mono">
+          <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-blue-400">½</b> Yarım Gün
           </span>
-          <span className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-1 rounded-md font-mono">
-            <b className="text-amber-400">İ</b> İzinli
+          <span className="inline-flex items-center gap-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded font-mono">
+            <b className="text-indigo-400">HT</b> Hafta Sonu Tatili (Ücretli)
           </span>
-          <span className="inline-flex items-center gap-1.5 bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-1 rounded-md font-mono">
+          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
+            <b className="text-amber-400">HÇ</b> Hafta Sonu Çalışması (Mesaili)
+          </span>
+          <span className="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded font-mono">
+            <b className="text-amber-300">İ</b> İzinli
+          </span>
+          <span className="inline-flex items-center gap-1 bg-purple-500/10 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-purple-400">R</b> Raporlu
           </span>
-          <span className="inline-flex items-center gap-1.5 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-1 rounded-md font-mono">
+          <span className="inline-flex items-center gap-1 bg-rose-500/10 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded font-mono">
             <b className="text-rose-400">X</b> Gelmedi
-          </span>
-          <span className="inline-flex items-center gap-1.5 bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full font-bold font-mono text-[10px]">
-            +2s (Mesai)
           </span>
         </div>
 
@@ -275,10 +323,10 @@ export const AttendanceMatrix: React.FC = () => {
                     <th
                       key={day}
                       className={`py-2 px-1 text-center w-9 border-r border-slate-800/60 font-mono ${
-                        isWeekend ? 'bg-slate-900/80 text-amber-400/80' : 'text-slate-300'
+                        isWeekend ? 'bg-indigo-950/40 text-amber-400 font-bold' : 'text-slate-300'
                       }`}
                     >
-                      <div className="text-[10px] text-slate-500 font-sans">
+                      <div className={`text-[10px] ${isWeekend ? 'text-indigo-400 font-bold' : 'text-slate-500'} font-sans`}>
                         {['Pz', 'Pt', 'Sa', 'Çr', 'Pş', 'Cu', 'Ct'][dateObj.getDay()]}
                       </div>
                       <div>{day}</div>
@@ -337,7 +385,7 @@ export const AttendanceMatrix: React.FC = () => {
                           key={day}
                           onClick={() => handleCellClick(worker, day)}
                           className={`py-1 px-0.5 text-center border-r border-slate-800/40 cursor-pointer hover:bg-amber-400/10 transition ${
-                            isWeekend ? 'bg-slate-950/40' : ''
+                            isWeekend ? 'bg-indigo-950/20' : ''
                           }`}
                         >
                           <div className="flex items-center justify-center">
@@ -348,18 +396,15 @@ export const AttendanceMatrix: React.FC = () => {
                     })}
 
                     {/* Summary Cells */}
-                    <td className="py-2.5 px-2 text-center border-r border-slate-800 font-mono font-bold text-emerald-400 bg-slate-950/30">
+                    <td className="py-2.5 px-2 text-center border-r border-slate-800 font-mono font-bold text-emerald-400">
                       {summary?.totalWorkedDaysEquivalent || 0}
                     </td>
-
-                    <td className="py-2.5 px-2 text-center border-r border-slate-800 font-mono font-bold text-amber-400 bg-slate-950/30">
-                      {summary?.totalOvertimeHours ? `${summary.totalOvertimeHours}s` : '-'}
+                    <td className="py-2.5 px-2 text-center border-r border-slate-800 font-mono font-bold text-amber-400">
+                      {summary?.totalOvertimeHours || 0}s
                     </td>
-
-                    <td className="py-2.5 px-3 text-right border-r border-slate-800 font-mono text-slate-200 bg-slate-950/30">
+                    <td className="py-2.5 px-3 text-right border-r border-slate-800 font-mono font-semibold text-slate-200">
                       {formatCurrency(summary?.totalGrossEarnings || 0)}
                     </td>
-
                     <td className="py-2.5 px-3 text-right font-mono font-bold text-amber-400 bg-amber-500/5">
                       {formatCurrency(summary?.netPayable || 0)}
                     </td>
@@ -371,10 +416,10 @@ export const AttendanceMatrix: React.FC = () => {
         </div>
       </div>
 
-      {/* QUICK EDIT CELL MODAL */}
+      {/* SINGLE CELL EDIT MODAL */}
       {editingCell && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-base font-bold text-white">
@@ -395,15 +440,17 @@ export const AttendanceMatrix: React.FC = () => {
             {/* Quick Status Buttons */}
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Devam Durumu
+                Kategori / Devam Durumu
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { type: 'FULL', label: 'Tam Gün (1.0)', color: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
                   { type: 'HALF', label: 'Yarım Gün (0.5)', color: 'border-blue-500/50 bg-blue-500/10 text-blue-400' },
-                  { type: 'LEAVE', label: 'İzinli', color: 'border-amber-500/50 bg-amber-500/10 text-amber-400' },
-                  { type: 'REPORT', label: 'Raporlu', color: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
-                  { type: 'ABSENT', label: 'Gelmedi', color: 'border-rose-500/50 bg-rose-500/10 text-rose-400' },
+                  { type: 'WEEKEND', label: 'Hafta Sonu Tatili (HT)', color: 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' },
+                  { type: 'WEEKEND_WORK', label: 'Hafta Sonu Çalışması (HÇ)', color: 'border-amber-500/50 bg-amber-500/10 text-amber-400' },
+                  { type: 'LEAVE', label: 'İzinli (İ)', color: 'border-amber-500/30 bg-amber-500/5 text-amber-300' },
+                  { type: 'REPORT', label: 'Raporlu (R)', color: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
+                  { type: 'ABSENT', label: 'Gelmedi (X)', color: 'border-rose-500/50 bg-rose-500/10 text-rose-400' },
                 ].map((item) => {
                   const isSelected = (editingCell.record?.type || 'FULL') === item.type;
                   return (
@@ -412,11 +459,11 @@ export const AttendanceMatrix: React.FC = () => {
                       onClick={() =>
                         handleSaveCell(
                           item.type as AttendanceType,
-                          editingCell.record?.overtimeHours || 0,
+                          editingCell.record?.overtimeHours || (item.type === 'WEEKEND_WORK' ? 8 : 0),
                           editingCell.record?.projectId
                         )
                       }
-                      className={`p-3 rounded-xl border text-xs font-bold text-left transition flex items-center justify-between ${item.color} ${
+                      className={`p-2.5 rounded-xl border text-xs font-bold text-left transition flex items-center justify-between ${item.color} ${
                         isSelected ? 'ring-2 ring-amber-400' : 'opacity-80 hover:opacity-100'
                       }`}
                     >
@@ -439,7 +486,7 @@ export const AttendanceMatrix: React.FC = () => {
               </label>
 
               <div className="grid grid-cols-5 gap-2">
-                {[0, 1, 2, 3, 4].map((hrs) => (
+                {[0, 1, 2, 4, 8].map((hrs) => (
                   <button
                     key={hrs}
                     onClick={() =>
@@ -506,20 +553,15 @@ export const AttendanceMatrix: React.FC = () => {
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 bg-slate-800/60 p-3 rounded-xl border border-slate-800">
-              Seçilen gündeki tüm aktif personellere ({activeWorkers.length} kişi) aynı devam durumunu ve mesai saatini uygulayabilirsiniz.
-            </p>
-
             <div className="space-y-4">
-              {/* Day Selection */}
               <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                   Uygulanacak Gün
                 </label>
                 <select
                   value={bulkDay}
-                  onChange={(e) => setBulkDay(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
+                  onChange={(e) => setBulkDay(parseInt(e.target.value))}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                 >
                   {daysArray.map((d) => (
                     <option key={d} value={d}>
@@ -529,51 +571,49 @@ export const AttendanceMatrix: React.FC = () => {
                 </select>
               </div>
 
-              {/* Status */}
               <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                  Toplu Devam Durumu
+                  Devam Durumu / Kategori
                 </label>
                 <select
                   value={bulkType}
                   onChange={(e) => setBulkType(e.target.value as AttendanceType)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-semibold"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                 >
-                  <option value="FULL">Tam Gün (1.0 Yövmiye)</option>
-                  <option value="HALF">Yarım Gün (0.5 Yövmiye)</option>
-                  <option value="LEAVE">İzinli (Ücretli İzin)</option>
-                  <option value="REPORT">Raporlu</option>
-                  <option value="ABSENT">Gelmedi (Devamsız)</option>
+                  <option value="FULL">Tam Gün (1.0)</option>
+                  <option value="HALF">Yarım Gün (0.5)</option>
+                  <option value="WEEKEND">Hafta Sonu Tatili (HT - Ücretli)</option>
+                  <option value="WEEKEND_WORK">Hafta Sonu Çalışması (HÇ - Mesaili)</option>
+                  <option value="LEAVE">İzinli (İ)</option>
+                  <option value="REPORT">Raporlu (R)</option>
+                  <option value="ABSENT">Gelmedi (X)</option>
                 </select>
               </div>
 
-              {/* Overtime */}
               <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                  Eklenecek Fazla Mesai (Saat)
+                  Ek Fazla Mesai Saati
                 </label>
                 <input
                   type="number"
                   min="0"
                   max="12"
-                  step="0.5"
                   value={bulkOvertime}
-                  onChange={(e) => setBulkOvertime(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500 font-mono"
+                  onChange={(e) => setBulkOvertime(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
-              {/* Project */}
               <div>
                 <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                  Proje / Makine Siparişi (Opsiyonel)
+                  Proje Seçimi
                 </label>
                 <select
                   value={bulkProject}
                   onChange={(e) => setBulkProject(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                 >
-                  <option value="">-- Proje Seçilmedi --</option>
+                  <option value="">-- Proje Yok --</option>
                   {projects.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.code} - {p.name}
@@ -583,18 +623,18 @@ export const AttendanceMatrix: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-3 pt-3 border-t border-slate-800">
+            <div className="pt-3 border-t border-slate-800 flex items-center justify-end space-x-3">
               <button
                 onClick={() => setIsBulkOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800"
               >
                 İptal
               </button>
               <button
                 onClick={handleApplyBulk}
-                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition shadow-lg shadow-amber-500/20"
+                className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-2 rounded-xl text-xs transition shadow-md"
               >
-                Tüm Ekibe Uygula
+                Uygula ({activeWorkers.length} Personel)
               </button>
             </div>
           </div>
