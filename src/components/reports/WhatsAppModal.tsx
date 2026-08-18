@@ -4,6 +4,8 @@ import { formatCurrency, getMonthNameTr } from '../../utils/calculations';
 import type { MonthlyWorkerSummary } from '../../types';
 import { Send, MessageSquare, CheckCircle2, Phone, X, Copy, Check } from 'lucide-react';
 
+import { getWorkerMissingDateDetails } from './ReportsView';
+
 interface WhatsAppModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,7 +13,7 @@ interface WhatsAppModalProps {
 }
 
 export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose, summary }) => {
-  const { settings, selectedYear, selectedMonth, monthlySummaries, notify } = useApp();
+  const { settings, selectedYear, selectedMonth, monthlySummaries, attendance, notify } = useApp();
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [sentMap, setSentMap] = useState<{ [key: string]: boolean }>({});
@@ -24,7 +26,13 @@ export const WhatsAppModal: React.FC<WhatsAppModalProps> = ({ isOpen, onClose, s
   // Format message text for a worker
   const formatWhatsAppText = (s: MonthlyWorkerSummary) => {
     const phoneClean = s.worker.phone.replace(/\s+/g, '').replace(/^0/, '90');
-    const msg = `*${settings.companyName}*\n*${getMonthNameTr(selectedMonth).toUpperCase()} ${selectedYear} MAAŞ VE HAKEDİŞ BÖRDROSU*\n-----------------------------------\n Sayın *${s.worker.firstName} ${s.worker.lastName}* (${s.worker.role}),\n\nBu ayki puantaj ve maaş hakediş detaylarınız aşağıdadır:\n\n Çalışılan Eşdeğer Gün: *${s.totalWorkedDaysEquivalent} Gün*\n Fazla Mesai Saati: *${s.totalOvertimeHours} Saat*\n Brüt Hakediş Tutarı: *${formatCurrency(s.totalGrossEarnings)}*\n Kesilen Nakit/Banka Avansları: *${formatCurrency(s.totalAdvancesPaid)}*\n\n *NET ELE GEÇECEK ÖDENECEK MAAŞ: ${formatCurrency(s.netPayable)}*\n-----------------------------------\nIBAN: ${s.worker.iban || 'Nakit Ödeme'}\n\nİyi çalışmalar dileriz.\n*YNR MAKİNE İK & PUANTAJ YÖNETİMİ*`;
+    const missingList = getWorkerMissingDateDetails(s.worker.id, selectedYear, selectedMonth, attendance);
+    const missingText =
+      missingList.length > 0
+        ? `\n Eksik/Kesintili Gün Tarihleri: *${missingList.map((m) => `${m.date} (${m.label})`).join(', ')}*`
+        : '\n Eksik Gün: *Tam Devamlılık*';
+
+    const msg = `*${settings.companyName}*\n*${getMonthNameTr(selectedMonth).toUpperCase()} ${selectedYear} MAAŞ VE HAKEDİŞ BÖRDROSU*\n-----------------------------------\n Sayın *${s.worker.firstName} ${s.worker.lastName}* (${s.worker.role}),\n\nBu ayki puantaj ve maaş hakediş detaylarınız aşağıdadır:\n\n Çalışılan Eşdeğer Gün: *${s.totalWorkedDaysEquivalent} Gün*\n Fazla Mesai Saati: *${s.totalOvertimeHours} Saat*${missingText}\n Brüt Hakediş Tutarı: *${formatCurrency(s.totalGrossEarnings)}*\n Kesilen Nakit/Banka Avansları: *${formatCurrency(s.totalAdvancesPaid)}*\n\n *NET ELE GEÇECEK ÖDENECEK MAAŞ: ${formatCurrency(s.netPayable)}*\n-----------------------------------\nIBAN: ${s.worker.iban || 'Nakit Ödeme'}\n\nİyi çalışmalar dileriz.\n*YNR MAKİNE İK & PUANTAJ YÖNETİMİ*`;
 
     return { phoneClean, msg };
   };
