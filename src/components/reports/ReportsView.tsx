@@ -53,7 +53,7 @@ export const getWorkerMissingDateDetails = (
         dayNumber: dayNum,
         type: rec.type,
         label: 'Devamsız (Gelmedi)',
-        badgeClass: 'bg-rose-500/20 text-rose-400 border border-rose-500/40 print:bg-rose-100 print:text-rose-900 print:border-rose-300 font-bold',
+        badgeClass: 'bg-rose-500/20 text-rose-400 border border-rose-500/40 print:!bg-rose-100 print:!text-rose-900 print:!border-rose-400 font-bold',
       });
     } else if (rec.type === 'REPORT_UNPAID') {
       missingDetails.push({
@@ -61,7 +61,7 @@ export const getWorkerMissingDateDetails = (
         dayNumber: dayNum,
         type: rec.type,
         label: 'Ücretsiz Rapor',
-        badgeClass: 'bg-purple-500/20 text-purple-400 border border-purple-500/40 print:bg-purple-100 print:text-purple-900 print:border-purple-300 font-bold',
+        badgeClass: 'bg-purple-500/20 text-purple-400 border border-purple-500/40 print:!bg-purple-100 print:!text-purple-900 print:!border-purple-400 font-bold',
       });
     } else if (rec.type === 'HALF') {
       missingDetails.push({
@@ -69,7 +69,7 @@ export const getWorkerMissingDateDetails = (
         dayNumber: dayNum,
         type: rec.type,
         label: 'Yarım Gün',
-        badgeClass: 'bg-amber-500/20 text-amber-400 border border-amber-500/40 print:bg-amber-100 print:text-amber-900 print:border-amber-300 font-bold',
+        badgeClass: 'bg-amber-500/20 text-amber-400 border border-amber-500/40 print:!bg-amber-100 print:!text-amber-900 print:!border-amber-400 font-bold',
       });
     } else if (rec.type === 'LEAVE') {
       missingDetails.push({
@@ -77,7 +77,7 @@ export const getWorkerMissingDateDetails = (
         dayNumber: dayNum,
         type: rec.type,
         label: 'İzinli',
-        badgeClass: 'bg-blue-500/20 text-blue-400 border border-blue-500/40 print:bg-blue-100 print:text-blue-900 print:border-blue-300 font-bold',
+        badgeClass: 'bg-blue-500/20 text-blue-400 border border-blue-500/40 print:!bg-blue-100 print:!text-blue-900 print:!border-blue-400 font-bold',
       });
     }
   });
@@ -92,30 +92,30 @@ const CompanyHeaderLogo: React.FC<{ companyName: string; title: string; taxNo: s
   phone,
   address,
 }) => (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b-2 border-slate-800 print:border-amber-500 pb-4 mb-4 gap-4">
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b-2 border-amber-500/40 print:!border-amber-500 pb-4 mb-4 gap-4">
     <div className="flex items-center space-x-3.5">
       {/* Modern High-End Emblem */}
-      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-400 p-0.5 shadow-xl flex items-center justify-center shrink-0 print:bg-amber-500 print:border-none">
-        <div className="w-full h-full bg-slate-950 print:bg-slate-950 rounded-[14px] flex flex-col items-center justify-center p-1">
+      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-600 to-amber-400 p-0.5 shadow-xl flex items-center justify-center shrink-0 print:!bg-amber-500 print:!border-none">
+        <div className="w-full h-full bg-slate-950 print:!bg-slate-950 rounded-[14px] flex flex-col items-center justify-center p-1">
           <div className="flex items-center justify-center space-x-0.5">
-            <span className="text-amber-400 font-black text-xs font-mono tracking-tighter print:text-amber-400">YNR</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 print:bg-amber-400"></span>
+            <span className="text-amber-400 font-black text-xs font-mono tracking-tighter print:!text-amber-400">YNR</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 print:!bg-amber-400"></span>
           </div>
-          <span className="text-[8px] font-black text-white print:text-white tracking-widest font-mono">MAKİNE</span>
+          <span className="text-[8px] font-black text-white print:!text-white tracking-widest font-mono">MAKİNE</span>
         </div>
       </div>
 
       <div>
         <div className="flex items-center space-x-2">
-          <h1 className="text-lg font-black text-white print:text-slate-900 uppercase tracking-tight font-mono">
+          <h1 className="text-lg font-black text-white print:!text-slate-900 uppercase tracking-tight font-mono">
             {companyName}
           </h1>
         </div>
-        <p className="text-xs text-amber-400 print:text-amber-700 font-bold mt-0.5">{title}</p>
-        <p className="text-[10px] text-slate-400 print:text-slate-600 font-mono mt-0.5">
+        <p className="text-xs text-amber-400 print:!text-amber-700 font-bold mt-0.5">{title}</p>
+        <p className="text-[10px] text-slate-400 print:!text-slate-600 font-mono mt-0.5">
           Vergi D. / No: {taxNo} | Tel: {phone}
         </p>
-        <p className="text-[10px] text-slate-500 print:text-slate-600 font-mono truncate max-w-md">
+        <p className="text-[10px] text-slate-500 print:!text-slate-600 font-mono truncate max-w-md">
           {address}
         </p>
       </div>
@@ -123,11 +123,11 @@ const CompanyHeaderLogo: React.FC<{ companyName: string; title: string; taxNo: s
 
     {/* Official Verification Badge */}
     <div className="text-right shrink-0 hidden sm:block">
-      <div className="inline-flex items-center space-x-1.5 bg-slate-950 print:bg-amber-50 border border-slate-800 print:border-amber-300 px-3 py-1 rounded-xl text-[10px] font-mono font-bold text-slate-300 print:text-amber-900 mb-1 shadow-sm">
-        <ShieldCheck className="w-4 h-4 text-emerald-400 print:text-emerald-600" />
+      <div className="inline-flex items-center space-x-1.5 bg-slate-950 print:!bg-amber-500 print:!text-slate-950 border border-slate-800 print:!border-amber-600 px-3 py-1 rounded-xl text-[10px] font-mono font-bold text-slate-300 shadow-sm">
+        <ShieldCheck className="w-4 h-4 text-emerald-400 print:!text-slate-950" />
         <span>RESMİ MAAŞ & İK BORDROSU</span>
       </div>
-      <p className="text-[10px] text-slate-400 print:text-slate-500 font-mono">
+      <p className="text-[10px] text-slate-400 print:!text-slate-600 font-mono mt-1">
         Onay Kodu: YNR-{Date.now().toString().substring(6)}
       </p>
     </div>
@@ -245,18 +245,43 @@ export const ReportsView: React.FC = () => {
 
   return (
     <div className="space-y-6 print:p-0 print:space-y-4">
-      {/* Print Color Adjustments CSS */}
+      {/* Global Ultra-Modern Print CSS */}
       <style>{`
         @media print {
-          body {
+          * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
-            background-color: white !important;
+            color-adjust: exact !important;
+          }
+          body {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .print-card-header-emerald {
+            background-color: #047857 !important;
+            color: #ffffff !important;
+          }
+          .print-card-header-rose {
+            background-color: #be123c !important;
+            color: #ffffff !important;
+          }
+          .print-card-header-amber {
+            background-color: #d97706 !important;
+            color: #ffffff !important;
+          }
+          .print-net-banner {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
             color: #0f172a !important;
           }
-          .print-color-exact {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
+          .print-missing-card {
+            background-color: #fffbeb !important;
+            border-color: #fcd34d !important;
+          }
+          .print-personal-card {
+            background-color: #f8fafc !important;
+            border-color: #e2e8f0 !important;
           }
         }
       `}</style>
@@ -269,7 +294,7 @@ export const ReportsView: React.FC = () => {
             Resmi Bordro, Pusula & Rapor Merkezi
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Eksik gün tarihli, modern renkli baskıya ve PDF çıktısına tam uyumlu resmi evraklar
+            Şirket logolu, PDF & Yazdırma baskısına tam uyumlu resmi ücret ve puantaj belgeleri
           </p>
         </div>
 
@@ -353,7 +378,7 @@ export const ReportsView: React.FC = () => {
 
       {/* REPORT TYPE 1: Detaylı Ücret Bordrosu Tablosu */}
       {reportType === 'payroll' && (
-        <div className="bg-slate-900 print:bg-white text-slate-100 print:text-slate-900 border border-slate-800 print:border-slate-300 rounded-3xl p-6 shadow-xl space-y-6 print:shadow-none print:p-4">
+        <div className="bg-slate-900 print:!bg-white text-slate-100 print:!text-slate-900 border border-slate-800 print:!border-slate-300 rounded-3xl p-6 shadow-xl space-y-6 print:!shadow-none print:!p-2">
           <CompanyHeaderLogo
             companyName={settings.companyName}
             title={settings.title}
@@ -362,80 +387,80 @@ export const ReportsView: React.FC = () => {
             address={settings.address}
           />
 
-          <div className="flex justify-between items-center bg-slate-950 print:bg-slate-100 p-3 rounded-2xl border border-slate-800 print:border-slate-300 print-color-exact">
-            <h2 className="text-sm font-extrabold text-amber-400 print:text-amber-900 uppercase tracking-wider">
+          <div className="flex justify-between items-center bg-slate-950 print:!bg-amber-600 print:!text-white p-3 rounded-2xl border border-slate-800 print:!border-amber-600">
+            <h2 className="text-sm font-extrabold text-amber-400 print:!text-white uppercase tracking-wider">
               DETAYLI PERSONEL ÜCRET BORDROSU CETVELİ
             </h2>
-            <span className="text-xs font-mono font-bold text-white print:text-slate-900 bg-slate-900 print:bg-white border border-slate-800 print:border-slate-300 px-3 py-1 rounded-xl">
+            <span className="text-xs font-mono font-bold text-white print:!text-slate-950 bg-slate-900 print:!bg-amber-300 border border-slate-800 print:!border-amber-400 px-3 py-1 rounded-xl">
               DÖNEM: {getMonthNameTr(selectedMonth).toUpperCase()} {selectedYear}
             </span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs print:text-[10px]">
+            <table className="w-full text-left border-collapse text-xs print:!text-[9px]">
               <thead>
-                <tr className="bg-slate-950 print:bg-slate-800 text-slate-300 print:text-white border border-slate-800 print:border-slate-700 font-semibold print-color-exact">
-                  <th className="py-2.5 px-3 border border-slate-800 print:border-slate-700">Personel / Görev</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-center">Hak Gün</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right">Yövmiye (₺)</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right text-indigo-400 print:text-indigo-200">Yol (₺)</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right text-emerald-400 print:text-emerald-200">Yemek (₺)</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right text-amber-400 print:text-amber-200">Gece (₺)</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right text-amber-300 print:text-amber-200">Mesai (₺)</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right font-bold text-emerald-400 print:text-emerald-200">Brüt Toplam</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-right text-rose-400 print:text-rose-200">Avans/Kesinti</th>
-                  <th className="py-2.5 px-2 border border-slate-800 print:border-slate-700 text-left text-amber-400 print:text-amber-200">Eksik Gün Tarihleri</th>
-                  <th className="py-2.5 px-3 border border-slate-800 print:border-slate-700 text-right font-extrabold bg-amber-500/10 text-amber-400 print:text-amber-300">Net Ödenecek</th>
+                <tr className="bg-slate-950 print:!bg-slate-900 text-slate-300 print:!text-amber-400 border border-slate-800 print:!border-slate-800 font-semibold">
+                  <th className="py-2.5 px-3 border border-slate-800 print:!border-slate-700">Personel / Görev</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-center">Hak Gün</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right">Yövmiye (₺)</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right text-indigo-400 print:!text-indigo-300">Yol (₺)</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right text-emerald-400 print:!text-emerald-300">Yemek (₺)</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right text-amber-400 print:!text-amber-300">Gece (₺)</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right text-amber-300 print:!text-amber-300">Mesai (₺)</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right font-bold text-emerald-400 print:!text-emerald-300">Brüt Toplam</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right text-rose-400 print:!text-rose-300">Avans/Kesinti</th>
+                  <th className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-left text-amber-400 print:!text-amber-300">Eksik Gün Tarihleri</th>
+                  <th className="py-2.5 px-3 border border-slate-800 print:!border-slate-700 text-right font-extrabold bg-amber-500/10 text-amber-400 print:!text-amber-300">Net Ödenecek</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 print:divide-slate-200">
+              <tbody className="divide-y divide-slate-800 print:!divide-slate-200">
                 {monthlySummaries.map((s) => {
                   const missingList = getWorkerMissingDateDetails(s.worker.id, selectedYear, selectedMonth, attendance);
 
                   return (
-                    <tr key={s.worker.id} className="hover:bg-slate-800/40 print:hover:bg-transparent">
-                      <td className="py-2.5 px-3 border border-slate-800 print:border-slate-200">
-                        <div className="font-bold text-white print:text-slate-900">{s.worker.firstName} {s.worker.lastName}</div>
-                        <div className="text-[10px] text-slate-400 print:text-slate-600">{s.worker.role} ({s.worker.code})</div>
+                    <tr key={s.worker.id} className="hover:bg-slate-800/40 print:hover:!bg-transparent print:even:!bg-slate-50">
+                      <td className="py-2 px-2 border border-slate-800 print:!border-slate-200">
+                        <div className="font-bold text-white print:!text-slate-900">{s.worker.firstName} {s.worker.lastName}</div>
+                        <div className="text-[9px] text-slate-400 print:!text-slate-600">{s.worker.role} ({s.worker.code})</div>
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-center font-mono font-bold">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-center font-mono font-bold">
                         {s.totalWorkedDaysEquivalent} G
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono">
                         {formatCurrency(s.baseWageEarnings)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono text-indigo-300 print:text-indigo-900">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono text-indigo-300 print:!text-indigo-900">
                         {formatCurrency(s.totalTransportAllowances)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono text-emerald-400 print:text-emerald-900">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono text-emerald-400 print:!text-emerald-900">
                         {formatCurrency(s.totalMealAllowances)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono text-amber-400 print:text-amber-900">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono text-amber-400 print:!text-amber-900">
                         {formatCurrency(s.nightShiftBonusEarnings)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono text-amber-300 print:text-amber-900 font-semibold">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono text-amber-300 print:!text-amber-900 font-semibold">
                         {formatCurrency(s.overtimeEarnings)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono font-bold text-emerald-400 print:text-emerald-800">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono font-bold text-emerald-400 print:!text-emerald-800">
                         {formatCurrency(s.totalGrossEarnings)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-right font-mono text-rose-400 print:text-rose-800">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-right font-mono text-rose-400 print:!text-rose-800">
                         -{formatCurrency(s.totalAdvancesPaid + s.totalDeductions)}
                       </td>
-                      <td className="py-2.5 px-2 border border-slate-800 print:border-slate-200 text-left font-mono text-[10px]">
+                      <td className="py-2 px-1 border border-slate-800 print:!border-slate-200 text-left font-mono text-[9px]">
                         {missingList.length === 0 ? (
-                          <span className="text-emerald-400 print:text-emerald-700 font-semibold">Tam Devam</span>
+                          <span className="text-emerald-400 print:!text-emerald-700 font-semibold">Tam Devam</span>
                         ) : (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-0.5">
                             {missingList.map((m, idx) => (
-                              <span key={idx} className={`px-1 py-0.5 rounded text-[9px] ${m.badgeClass}`}>
+                              <span key={idx} className={`px-1 py-0.2 rounded text-[8px] ${m.badgeClass}`}>
                                 {m.date} ({m.label.substring(0, 3)})
                               </span>
                             ))}
                           </div>
                         )}
                       </td>
-                      <td className="py-2.5 px-3 border border-slate-800 print:border-slate-200 text-right font-mono font-extrabold text-amber-400 print:text-amber-900 bg-amber-500/5 print:bg-amber-50 print-color-exact">
+                      <td className="py-2 px-2 border border-slate-800 print:!border-slate-200 text-right font-mono font-extrabold text-amber-400 print:!text-amber-950 bg-amber-500/5 print:!bg-amber-100 font-bold">
                         {formatCurrency(s.netPayable)}
                       </td>
                     </tr>
@@ -443,36 +468,36 @@ export const ReportsView: React.FC = () => {
                 })}
               </tbody>
               <tfoot>
-                <tr className="bg-slate-950 print:bg-slate-900 font-bold text-white print:text-amber-400 border-t-2 border-slate-800 print:border-amber-500 print-color-exact">
-                  <td className="py-3 px-3 border border-slate-800 print:border-slate-700">GENEL TOPLAM</td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-center font-mono">
+                <tr className="bg-slate-950 print:!bg-slate-900 font-bold text-white print:!text-amber-400 border-t-2 border-slate-800 print:!border-amber-500">
+                  <td className="py-2.5 px-2 border border-slate-800 print:!border-slate-700">GENEL TOPLAM</td>
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-center font-mono">
                     {monthlySummaries.reduce((a, b) => a + b.totalWorkedDaysEquivalent, 0)} G
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.baseWageEarnings, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.totalTransportAllowances, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.totalMealAllowances, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.nightShiftBonusEarnings, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.overtimeEarnings, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono text-emerald-400 print:text-emerald-300">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono text-emerald-400 print:!text-emerald-300">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.totalGrossEarnings, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-right font-mono text-rose-400 print:text-rose-300">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-right font-mono text-rose-400 print:!text-rose-300">
                     -{formatCurrency(monthlySummaries.reduce((a, b) => a + b.totalAdvancesPaid + b.totalDeductions, 0))}
                   </td>
-                  <td className="py-3 px-2 border border-slate-800 print:border-slate-700 text-left font-mono text-[10px] text-slate-400 print:text-slate-300">
+                  <td className="py-2.5 px-1 border border-slate-800 print:!border-slate-700 text-left font-mono text-[9px] text-slate-400 print:!text-slate-300">
                     -
                   </td>
-                  <td className="py-3 px-3 border border-slate-800 print:border-slate-700 text-right font-mono text-amber-400 print:text-amber-300 text-sm">
+                  <td className="py-2.5 px-2 border border-slate-800 print:!border-slate-700 text-right font-mono text-amber-400 print:!text-amber-300 text-xs font-bold">
                     {formatCurrency(monthlySummaries.reduce((a, b) => a + b.netPayable, 0))}
                   </td>
                 </tr>
@@ -480,24 +505,24 @@ export const ReportsView: React.FC = () => {
             </table>
           </div>
 
-          <div className="pt-8 border-t border-slate-800 print:border-slate-300 grid grid-cols-3 gap-6 text-center text-xs text-slate-300 print:text-slate-800">
+          <div className="pt-6 border-t border-slate-800 print:!border-slate-300 grid grid-cols-3 gap-6 text-center text-xs text-slate-300 print:!text-slate-800">
             <div className="space-y-6">
-              <div className="border-b border-slate-700 print:border-slate-400 pb-2 font-bold">Hazırlayan / İK Yöneticisi</div>
-              <div className="text-[10px] text-slate-500 print:text-slate-600">İmza / Kaşe</div>
+              <div className="border-b border-slate-700 print:!border-slate-400 pb-1 font-bold">Hazırlayan / İK Yöneticisi</div>
+              <div className="text-[9px] text-slate-500 print:!text-slate-600">İmza / Kaşe</div>
             </div>
             <div className="space-y-6">
-              <div className="border-b border-slate-700 print:border-slate-400 pb-2 font-bold">Muhasebe / Finans Onay</div>
-              <div className="text-[10px] text-slate-500 print:text-slate-600">İmza / Tarih</div>
+              <div className="border-b border-slate-700 print:!border-slate-400 pb-1 font-bold">Muhasebe / Finans Onay</div>
+              <div className="text-[9px] text-slate-500 print:!text-slate-600">İmza / Tarih</div>
             </div>
             <div className="space-y-6">
-              <div className="border-b border-slate-700 print:border-slate-400 pb-2 font-bold">Genel Müdür Onay</div>
-              <div className="text-[10px] text-slate-500 print:text-slate-600">İmza / Kaşe</div>
+              <div className="border-b border-slate-700 print:!border-slate-400 pb-1 font-bold">Genel Müdür Onay</div>
+              <div className="text-[9px] text-slate-500 print:!text-slate-600">İmza / Kaşe</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* REPORT TYPE 2: Bireysel Maaş Pusulası */}
+      {/* REPORT TYPE 2: Bireysel Maaş Pusulası (MODERN COLORED PRINT) */}
       {reportType === 'slip' && (
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-lg print:hidden">
@@ -527,7 +552,7 @@ export const ReportsView: React.FC = () => {
           </div>
 
           {selectedSummary && detailedTax && (
-            <div className="bg-slate-900 print:bg-white text-slate-100 print:text-slate-900 border border-slate-800 print:border-slate-300 rounded-3xl p-8 shadow-xl space-y-6 print:p-4 print:shadow-none">
+            <div className="bg-slate-900 print:!bg-white text-slate-100 print:!text-slate-900 border border-slate-800 print:!border-slate-300 rounded-3xl p-8 shadow-xl space-y-6 print:!p-2 print:!shadow-none">
               <CompanyHeaderLogo
                 companyName={settings.companyName}
                 title={settings.title}
@@ -536,104 +561,105 @@ export const ReportsView: React.FC = () => {
                 address={settings.address}
               />
 
-              <div className="flex justify-between items-center bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 print:from-amber-50 print:to-amber-100 p-3 rounded-2xl border border-amber-500/30 print:border-amber-400 print-color-exact">
-                <h2 className="text-sm font-extrabold text-amber-400 print:text-amber-900 uppercase tracking-wider">
+              {/* Title & Period Banner */}
+              <div className="flex justify-between items-center bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 print:!bg-slate-900 print:!text-white p-3.5 rounded-2xl border border-amber-500/30 print:!border-slate-900 shadow-sm">
+                <h2 className="text-sm font-black text-amber-400 print:!text-amber-400 uppercase tracking-wider font-mono">
                   RESMİ BİREYSEL ÜCRET MAAŞ PUSULASI
                 </h2>
-                <span className="text-xs font-mono font-bold text-white print:text-slate-900 bg-slate-900 print:bg-white border border-slate-800 print:border-amber-300 px-3 py-1 rounded-xl">
+                <span className="text-xs font-mono font-black text-white print:!text-slate-950 bg-slate-900 print:!bg-amber-400 border border-slate-800 print:!border-amber-400 px-3.5 py-1 rounded-xl">
                   DÖNEM: {getMonthNameTr(selectedMonth).toUpperCase()} {selectedYear}
                 </span>
               </div>
 
-              {/* Personal Info Box */}
-              <div className="bg-slate-950 print:bg-slate-50 border border-slate-800 print:border-slate-300 p-4 rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-4 text-xs print-color-exact">
+              {/* Personal Info Box (Styled Neutral Light Card for Print) */}
+              <div className="bg-slate-950 print-personal-card print:!bg-slate-100 print:!border-slate-300 border border-slate-800 p-4 rounded-2xl grid grid-cols-2 md:grid-cols-4 gap-4 text-xs shadow-sm">
                 <div>
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     Personel Adı Soyadı
                   </span>
-                  <p className="font-bold text-white print:text-slate-900 text-sm mt-0.5">
+                  <p className="font-black text-white print:!text-slate-950 text-sm mt-0.5">
                     {selectedSummary.worker.firstName} {selectedSummary.worker.lastName}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     Görevi / Unvanı
                   </span>
-                  <p className="font-semibold text-slate-300 print:text-slate-800 text-xs mt-0.5">
+                  <p className="font-bold text-slate-300 print:!text-slate-800 text-xs mt-0.5">
                     {selectedSummary.worker.role}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     Departman
                   </span>
-                  <p className="font-semibold text-slate-300 print:text-slate-800 text-xs mt-0.5">
+                  <p className="font-bold text-slate-300 print:!text-slate-800 text-xs mt-0.5">
                     {selectedSummary.worker.department}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     Sicil / Personel Kodu
                   </span>
-                  <p className="font-mono font-bold text-amber-400 print:text-amber-800 text-xs mt-0.5">
+                  <p className="font-mono font-extrabold text-amber-400 print:!text-amber-800 text-xs mt-0.5">
                     {selectedSummary.worker.code}
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     Günlük Yövmiye Ücreti
                   </span>
-                  <p className="font-bold font-mono text-emerald-400 print:text-emerald-800 text-xs mt-0.5">
+                  <p className="font-bold font-mono text-emerald-400 print:!text-emerald-800 text-xs mt-0.5">
                     {formatCurrency(selectedSummary.worker.dailyRate)} / Gün
                   </p>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     Saatlik Mesai Ücreti
                   </span>
-                  <p className="font-bold font-mono text-amber-400 print:text-amber-800 text-xs mt-0.5">
+                  <p className="font-bold font-mono text-amber-400 print:!text-amber-800 text-xs mt-0.5">
                     {formatCurrency(selectedSummary.worker.overtimeHourlyRate)} / Saat
                   </p>
                 </div>
 
                 <div className="md:col-span-2">
-                  <span className="text-[10px] text-slate-400 print:text-slate-600 uppercase font-semibold block">
+                  <span className="text-[10px] text-slate-400 print:!text-slate-500 uppercase font-bold block">
                     IBAN / Ödeme Hesabı
                   </span>
-                  <p className="font-mono text-slate-200 print:text-slate-900 text-xs mt-0.5 truncate">
+                  <p className="font-mono text-slate-200 print:!text-slate-900 text-xs mt-0.5 truncate font-semibold">
                     {selectedSummary.worker.iban || 'Nakit Ödeme'}
                   </p>
                 </div>
               </div>
 
               {/* USER REQUEST: EKSİK GÜN VE TARİH DETAYLARI PANENİ (MISSING DATES CARD) */}
-              <div className="bg-slate-950 print:bg-amber-50/70 border border-slate-800 print:border-amber-300 p-4 rounded-2xl space-y-2.5 print-color-exact">
+              <div className="bg-slate-950 print-missing-card print:!bg-amber-50 print:!border-amber-300 border border-slate-800 p-4 rounded-2xl space-y-2.5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <CalendarX className="w-4 h-4 text-amber-400 print:text-amber-800" />
-                    <h3 className="text-xs font-bold text-amber-400 print:text-amber-900 uppercase tracking-wider">
+                    <CalendarX className="w-4 h-4 text-amber-400 print:!text-amber-800" />
+                    <h3 className="text-xs font-black text-amber-400 print:!text-amber-900 uppercase tracking-wider">
                       EKSİK / KESİNTİLİ GÜNLER VE TARİH LİSTESİ
                     </h3>
                   </div>
 
-                  <span className="text-[11px] font-bold font-mono text-slate-300 print:text-slate-800">
+                  <span className="text-[11px] font-black font-mono text-slate-300 print:!text-slate-900">
                     Toplam Kesintili Gün: {selectedMissingDateDetails.length} Gün
                   </span>
                 </div>
 
                 {selectedMissingDateDetails.length === 0 ? (
-                  <div className="flex items-center space-x-2 bg-emerald-500/10 print:bg-emerald-100 border border-emerald-500/30 print:border-emerald-300 p-2.5 rounded-xl text-emerald-400 print:text-emerald-900 text-xs font-semibold print-color-exact">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 print:text-emerald-700" />
+                  <div className="flex items-center space-x-2 bg-emerald-500/10 print:!bg-emerald-100 border border-emerald-500/30 print:!border-emerald-400 p-2.5 rounded-xl text-emerald-400 print:!text-emerald-950 text-xs font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 print:!text-emerald-700" />
                     <span>Bu ay personel için herhangi bir devamsızlık veya eksik gün bulunmamaktadır (Tam Devamlılık).</span>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <p className="text-[11px] text-slate-400 print:text-slate-700">
+                    <p className="text-[11px] text-slate-400 print:!text-slate-700 font-medium">
                       Personelin bu ay içerisinde çalışmadığı veya raporlu olduğu kesinleşmiş tarihler aşağıda listelenmiştir:
                     </p>
 
@@ -641,10 +667,10 @@ export const ReportsView: React.FC = () => {
                       {selectedMissingDateDetails.map((item, idx) => (
                         <div
                           key={idx}
-                          className={`px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm print-color-exact ${item.badgeClass}`}
+                          className={`px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm ${item.badgeClass}`}
                         >
                           <AlertTriangle className="w-3.5 h-3.5" />
-                          <span className="font-mono font-extrabold">{item.date} {getMonthNameTr(selectedMonth)}</span>
+                          <span className="font-mono font-black">{item.date} {getMonthNameTr(selectedMonth)}</span>
                           <span>-</span>
                           <span>{item.label}</span>
                         </div>
@@ -657,69 +683,69 @@ export const ReportsView: React.FC = () => {
               {/* Earnings & Deductions Tables */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
                 {/* 1. Kazançlar */}
-                <div className="border border-slate-800 print:border-emerald-300 rounded-2xl overflow-hidden shadow">
-                  <div className="bg-slate-950 print:bg-emerald-700 p-3 border-b border-slate-800 print:border-emerald-600 flex items-center justify-between print-color-exact">
-                    <h3 className="font-bold text-emerald-400 print:text-white uppercase tracking-wider text-xs">
+                <div className="border border-slate-800 print:!border-emerald-600 rounded-2xl overflow-hidden shadow">
+                  <div className="bg-slate-950 print-card-header-emerald print:!bg-emerald-700 p-3 border-b border-slate-800 print:!border-emerald-600 flex items-center justify-between">
+                    <h3 className="font-black text-emerald-400 print:!text-white uppercase tracking-wider text-xs font-mono">
                       1. KAZANÇLAR & HAKEDİŞLER
                     </h3>
-                    <span className="text-[10px] text-slate-400 print:text-emerald-100 font-mono">Tutar (₺)</span>
+                    <span className="text-[10px] text-slate-400 print:!text-emerald-100 font-mono font-bold">Tutar (₺)</span>
                   </div>
 
                   <table className="w-full text-left border-collapse">
-                    <tbody className="divide-y divide-slate-800 print:divide-slate-200 text-slate-300 print:text-slate-900">
-                      <tr>
+                    <tbody className="divide-y divide-slate-800 print:!divide-slate-200 text-slate-300 print:!text-slate-900 font-medium">
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2.5 px-3">
                           Normal Çalışma ({selectedSummary.totalWorkedDaysEquivalent} Gün)
                         </td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono font-bold">
                           {formatCurrency(selectedSummary.baseWageEarnings)}
                         </td>
                       </tr>
 
                       {selectedSummary.nightShiftDays > 0 && (
-                        <tr>
-                          <td className="py-2.5 px-3 font-semibold text-amber-400 print:text-amber-800">
+                        <tr className="print:even:!bg-slate-50">
+                          <td className="py-2.5 px-3 font-semibold text-amber-400 print:!text-amber-800">
                             Gece Vardiyası Primi ({selectedSummary.nightShiftDays} Gün x %20 Ekstra)
                           </td>
-                          <td className="py-2.5 px-3 text-right font-mono text-amber-400 print:text-amber-800 font-semibold">
+                          <td className="py-2.5 px-3 text-right font-mono text-amber-400 print:!text-amber-900 font-bold">
                             +{formatCurrency(selectedSummary.nightShiftBonusEarnings)}
                           </td>
                         </tr>
                       )}
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2.5 px-3">
                           Fazla Mesai ({selectedSummary.totalOvertimeHours} Saat)
                         </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-amber-400 print:text-amber-800 font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono text-amber-400 print:!text-amber-900 font-bold">
                           +{formatCurrency(selectedSummary.overtimeEarnings)}
                         </td>
                       </tr>
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2.5 px-3">Günlük Yemek Yardımı</td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono font-bold">
                           +{formatCurrency(selectedSummary.totalMealAllowances)}
                         </td>
                       </tr>
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2.5 px-3">Günlük Yol Yardımı</td>
-                        <td className="py-2.5 px-3 text-right font-mono font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono font-bold">
                           +{formatCurrency(selectedSummary.totalTransportAllowances)}
                         </td>
                       </tr>
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2.5 px-3">İmalat & Performans Primi</td>
-                        <td className="py-2.5 px-3 text-right font-mono text-emerald-400 print:text-emerald-800 font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono text-emerald-400 print:!text-emerald-800 font-bold">
                           +{formatCurrency(selectedSummary.totalBonusesPaid)}
                         </td>
                       </tr>
 
-                      <tr className="bg-slate-950/80 print:bg-emerald-50 font-bold text-white print:text-emerald-950 border-t-2 border-slate-800 print:border-emerald-300 print-color-exact">
+                      <tr className="bg-slate-950/80 print:!bg-emerald-100 font-bold text-white print:!text-emerald-950 border-t-2 border-slate-800 print:!border-emerald-300">
                         <td className="py-3 px-3">TOPLAM BRÜT KAZANÇ</td>
-                        <td className="py-3 px-3 text-right font-mono text-emerald-400 print:text-emerald-900 text-sm">
+                        <td className="py-3 px-3 text-right font-mono text-emerald-400 print:!text-emerald-950 text-sm font-extrabold">
                           {formatCurrency(selectedSummary.totalGrossEarnings)}
                         </td>
                       </tr>
@@ -728,56 +754,56 @@ export const ReportsView: React.FC = () => {
                 </div>
 
                 {/* 2. Kesintiler */}
-                <div className="border border-slate-800 print:border-rose-300 rounded-2xl overflow-hidden shadow">
-                  <div className="bg-slate-950 print:bg-rose-700 p-3 border-b border-slate-800 print:border-rose-600 flex items-center justify-between print-color-exact">
-                    <h3 className="font-bold text-rose-400 print:text-white uppercase tracking-wider text-xs">
+                <div className="border border-slate-800 print:!border-rose-600 rounded-2xl overflow-hidden shadow">
+                  <div className="bg-slate-950 print-card-header-rose print:!bg-rose-700 p-3 border-b border-slate-800 print:!border-rose-600 flex items-center justify-between">
+                    <h3 className="font-black text-rose-400 print:!text-white uppercase tracking-wider text-xs font-mono">
                       2. KESİNTİLER & YASAL ÖDEMELER
                     </h3>
-                    <span className="text-[10px] text-slate-400 print:text-rose-100 font-mono">Tutar (₺)</span>
+                    <span className="text-[10px] text-slate-400 print:!text-rose-100 font-mono font-bold">Tutar (₺)</span>
                   </div>
 
                   <table className="w-full text-left border-collapse">
-                    <tbody className="divide-y divide-slate-800 print:divide-slate-200 text-slate-300 print:text-slate-900">
-                      <tr>
+                    <tbody className="divide-y divide-slate-800 print:!divide-slate-200 text-slate-300 print:!text-slate-900 font-medium">
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2 px-3 text-[11px]">SGK İşçi Payı Kesintisi (%{settings.sgkWorkerPercent ?? 14})</td>
-                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-rose-800">
+                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:!text-rose-900">
                           -{formatCurrency(detailedTax.sgkWorker)}
                         </td>
                       </tr>
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2 px-3 text-[11px]">İşsizlik Sigortası Payı (%{settings.unemploymentWorkerPercent ?? 1})</td>
-                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-rose-800">
+                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:!text-rose-900">
                           -{formatCurrency(detailedTax.unemploymentWorker)}
                         </td>
                       </tr>
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2 px-3 text-[11px]">Gelir Vergisi Kesintisi (%{settings.incomeTaxPercent ?? 15})</td>
-                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-rose-800">
+                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:!text-rose-900">
                           -{formatCurrency(detailedTax.incomeTax)}
                         </td>
                       </tr>
 
-                      <tr>
+                      <tr className="print:even:!bg-slate-50">
                         <td className="py-2 px-3 text-[11px]">Damga Vergisi (%{settings.stampTaxPercent ?? 0.759})</td>
-                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:text-rose-800">
+                        <td className="py-2 px-3 text-right font-mono text-rose-300 print:!text-rose-900">
                           -{formatCurrency(detailedTax.stampTax)}
                         </td>
                       </tr>
 
-                      <tr>
-                        <td className="py-2.5 px-3 font-semibold text-rose-400 print:text-rose-800">
+                      <tr className="print:even:!bg-slate-50">
+                        <td className="py-2.5 px-3 font-semibold text-rose-400 print:!text-rose-900">
                           Kesilen Ara Avans / EFT'ler
                         </td>
-                        <td className="py-2.5 px-3 text-right font-mono text-rose-400 print:text-rose-800 font-semibold">
+                        <td className="py-2.5 px-3 text-right font-mono text-rose-400 print:!text-rose-900 font-bold">
                           -{formatCurrency(selectedSummary.totalAdvancesPaid)}
                         </td>
                       </tr>
 
-                      <tr className="bg-slate-950/80 print:bg-rose-50 font-bold text-white print:text-rose-950 border-t-2 border-slate-800 print:border-rose-300 print-color-exact">
+                      <tr className="bg-slate-950/80 print:!bg-rose-100 font-bold text-white print:!text-rose-950 border-t-2 border-slate-800 print:!border-rose-300">
                         <td className="py-3 px-3">TOPLAM KESİNTİ TUTARI</td>
-                        <td className="py-3 px-3 text-right font-mono text-rose-400 print:text-rose-900 text-sm">
+                        <td className="py-3 px-3 text-right font-mono text-rose-400 print:!text-rose-950 text-sm font-extrabold">
                           -{formatCurrency(detailedTax.totalDeductionsAll)}
                         </td>
                       </tr>
@@ -786,45 +812,45 @@ export const ReportsView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Net Payable Banner */}
-              <div className="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 print:from-amber-500 print:to-amber-600 border-2 border-amber-400 print:border-amber-600 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl print-color-exact">
+              {/* Net Payable Banner (VIBRANT GOLD PRINT BANNER) */}
+              <div className="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 print-net-banner print:!bg-gradient-to-r print:!from-amber-500 print:!to-amber-600 print:!text-slate-950 border-2 border-amber-400 print:!border-amber-600 rounded-3xl p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
                 <div>
-                  <span className="text-xs font-extrabold text-amber-300 print:text-slate-950 uppercase tracking-widest block">
+                  <span className="text-xs font-black text-amber-300 print:!text-slate-950 uppercase tracking-widest block font-mono">
                     NET ELE GEÇECEK ÖDENECEK MAAŞ TUTARI
                   </span>
-                  <p className="text-xs text-slate-300 print:text-amber-950 mt-1 font-semibold">
+                  <p className="text-xs text-slate-300 print:!text-slate-900 mt-1 font-bold">
                     Brüt hakedişten yol, yemek, vardiya primi, yasal kesintiler ve avanslar düşüldükten sonra net kalan bakiyedir.
                   </p>
                 </div>
 
                 <div className="text-center md:text-right">
-                  <p className="text-3xl font-black text-amber-400 print:text-slate-950 font-mono tracking-tight">
+                  <p className="text-3xl font-black text-amber-400 print:!text-slate-950 font-mono tracking-tight">
                     {formatCurrency(detailedTax.finalNetPayable)}
                   </p>
                 </div>
               </div>
 
               {/* Signatures */}
-              <div className="pt-8 border-t border-slate-800 print:border-slate-300 grid grid-cols-3 gap-6 text-center text-xs text-slate-300 print:text-slate-800">
+              <div className="pt-8 border-t border-slate-800 print:!border-slate-300 grid grid-cols-3 gap-6 text-center text-xs text-slate-300 print:!text-slate-900">
                 <div className="space-y-8">
-                  <div className="border-b border-slate-700 print:border-slate-400 pb-2 font-bold">
+                  <div className="border-b border-slate-700 print:!border-slate-400 pb-2 font-bold">
                     Düzenleyen / İK Yetkilisi
                   </div>
-                  <div className="text-[10px] text-slate-500 print:text-slate-600">İmza / Tarih</div>
+                  <div className="text-[10px] text-slate-500 print:!text-slate-600 font-mono">İmza / Tarih</div>
                 </div>
 
                 <div className="space-y-8">
-                  <div className="border-b border-slate-700 print:border-slate-400 pb-2 font-bold">
+                  <div className="border-b border-slate-700 print:!border-slate-400 pb-2 font-bold">
                     Kontrol Eden / Şantiye Şefi
                   </div>
-                  <div className="text-[10px] text-slate-500 print:text-slate-600">İmza / Kaşe</div>
+                  <div className="text-[10px] text-slate-500 print:!text-slate-600 font-mono">İmza / Kaşe</div>
                 </div>
 
                 <div className="space-y-8">
-                  <div className="border-b border-slate-700 print:border-slate-400 pb-2 font-bold">
+                  <div className="border-b border-slate-700 print:!border-slate-400 pb-2 font-bold">
                     İhtilafsız Teslim Aldım (İmza)
                   </div>
-                  <div className="text-[10px] text-slate-500 print:text-slate-600">
+                  <div className="text-[10px] text-slate-500 print:!text-slate-600 font-mono">
                     {selectedSummary.worker.firstName} {selectedSummary.worker.lastName}
                   </div>
                 </div>
@@ -837,7 +863,7 @@ export const ReportsView: React.FC = () => {
 
       {/* REPORT TYPE 3: Vardiya Çizelgesi */}
       {reportType === 'roster' && selectedSummary && (
-        <div className="bg-slate-900 print:bg-white text-slate-100 print:text-slate-900 border border-slate-800 print:border-slate-300 rounded-3xl p-6 shadow-xl space-y-6 print:p-4">
+        <div className="bg-slate-900 print:!bg-white text-slate-100 print:!text-slate-900 border border-slate-800 print:!border-slate-300 rounded-3xl p-6 shadow-xl space-y-6 print:!p-2">
           <CompanyHeaderLogo
             companyName={settings.companyName}
             title={settings.title}
@@ -846,11 +872,11 @@ export const ReportsView: React.FC = () => {
             address={settings.address}
           />
 
-          <div className="flex justify-between items-center bg-slate-950 print:bg-slate-100 p-3 rounded-2xl border border-slate-800 print:border-slate-300 print-color-exact">
-            <h2 className="text-sm font-extrabold text-amber-400 print:text-amber-900 uppercase tracking-wider">
+          <div className="flex justify-between items-center bg-slate-950 print:!bg-slate-900 print:!text-white p-3 rounded-2xl border border-slate-800 print:!border-slate-900">
+            <h2 className="text-sm font-extrabold text-amber-400 print:!text-amber-400 uppercase tracking-wider">
               BİREYSEL VARDİYA & GİRİŞ-ÇIKIŞ ÇİZELGESİ
             </h2>
-            <span className="text-xs font-mono font-bold text-white print:text-slate-900 bg-slate-900 print:bg-white border border-slate-800 print:border-slate-300 px-3 py-1 rounded-xl">
+            <span className="text-xs font-mono font-bold text-white print:!text-slate-900 bg-slate-900 print:!bg-amber-400 border border-slate-800 print:!border-amber-400 px-3 py-1 rounded-xl">
               {selectedSummary.worker.firstName} {selectedSummary.worker.lastName} - {getMonthNameTr(selectedMonth)} {selectedYear}
             </span>
           </div>
@@ -858,16 +884,16 @@ export const ReportsView: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-950 print:bg-slate-800 text-slate-300 print:text-white border border-slate-800 print:border-slate-700 font-semibold print-color-exact">
-                  <th className="p-2 border border-slate-800 print:border-slate-700 w-28">Tarih</th>
-                  <th className="p-2 border border-slate-800 print:border-slate-700 w-24">Gün</th>
-                  <th className="p-2 border border-slate-800 print:border-slate-700">Vardiya / Durum</th>
-                  <th className="p-2 border border-slate-800 print:border-slate-700 text-center w-28">Giriş Saati</th>
-                  <th className="p-2 border border-slate-800 print:border-slate-700 text-center w-28">Çıkış Saati</th>
-                  <th className="p-2 border border-slate-800 print:border-slate-700 text-center w-24">Mesai (Saat)</th>
+                <tr className="bg-slate-950 print:!bg-slate-900 text-slate-300 print:!text-amber-400 border border-slate-800 print:!border-slate-800 font-semibold">
+                  <th className="p-2 border border-slate-800 print:!border-slate-700 w-28">Tarih</th>
+                  <th className="p-2 border border-slate-800 print:!border-slate-700 w-24">Gün</th>
+                  <th className="p-2 border border-slate-800 print:!border-slate-700">Vardiya / Durum</th>
+                  <th className="p-2 border border-slate-800 print:!border-slate-700 text-center w-28">Giriş Saati</th>
+                  <th className="p-2 border border-slate-800 print:!border-slate-700 text-center w-28">Çıkış Saati</th>
+                  <th className="p-2 border border-slate-800 print:!border-slate-700 text-center w-24">Mesai (Saat)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 print:divide-slate-200">
+              <tbody className="divide-y divide-slate-800 print:!divide-slate-200">
                 {daysArray.map((day) => {
                   const dateObj = new Date(selectedYear, selectedMonth - 1, day);
                   const dayNames = ['Pazar', 'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi'];
@@ -883,45 +909,45 @@ export const ReportsView: React.FC = () => {
                   return (
                     <tr
                       key={day}
-                      className={`border border-slate-800 print:border-slate-200 text-slate-200 print:text-slate-900 ${
-                        isWeekend ? 'bg-slate-950/40 print:bg-slate-50' : ''
+                      className={`border border-slate-800 print:!border-slate-200 text-slate-200 print:!text-slate-900 ${
+                        isWeekend ? 'bg-slate-950/40 print:!bg-slate-100 font-semibold' : 'print:even:!bg-slate-50'
                       }`}
                     >
-                      <td className="p-2 border border-slate-800 print:border-slate-200 font-mono font-bold">
+                      <td className="p-2 border border-slate-800 print:!border-slate-200 font-mono font-bold">
                         {String(day).padStart(2, '0')}.{String(selectedMonth).padStart(2, '0')}.{selectedYear}
                       </td>
 
-                      <td className="p-2 border border-slate-800 print:border-slate-200 font-semibold">
+                      <td className="p-2 border border-slate-800 print:!border-slate-200 font-semibold">
                         {dayName}
                       </td>
 
-                      <td className="p-2 border border-slate-800 print:border-slate-200">
+                      <td className="p-2 border border-slate-800 print:!border-slate-200">
                         {rec?.type === 'WEEKEND' ? (
-                          <span className="text-indigo-400 print:text-indigo-700 font-bold">HT - Hafta Sonu Tatili (Ücretli)</span>
+                          <span className="text-indigo-400 print:!text-indigo-800 font-bold">HT - Hafta Sonu Tatili (Ücretli)</span>
                         ) : rec?.type === 'WEEKEND_WORK' ? (
-                          <span className="text-amber-400 print:text-amber-700 font-bold">HÇ - Hafta Sonu Çalışması</span>
+                          <span className="text-amber-400 print:!text-amber-800 font-bold">HÇ - Hafta Sonu Çalışması</span>
                         ) : rec?.type === 'REPORT_PAID' ? (
-                          <span className="text-purple-400 print:text-purple-700 font-bold">ÜR - Ücretli Rapor</span>
+                          <span className="text-purple-400 print:!text-purple-800 font-bold">ÜR - Ücretli Rapor</span>
                         ) : rec?.type === 'REPORT_UNPAID' ? (
-                          <span className="text-rose-400 print:text-rose-700 font-bold">ÜR- - Ücretsiz Rapor</span>
+                          <span className="text-rose-400 print:!text-rose-800 font-bold">ÜR- - Ücretsiz Rapor</span>
                         ) : rec?.type === 'LEAVE' ? (
-                          <span className="text-amber-300 print:text-amber-700 font-bold">İzinli</span>
+                          <span className="text-amber-300 print:!text-amber-800 font-bold">İzinli</span>
                         ) : rec?.type === 'ABSENT' ? (
-                          <span className="text-rose-500 print:text-rose-700 font-bold">Gelmedi</span>
+                          <span className="text-rose-500 print:!text-rose-800 font-bold">Gelmedi</span>
                         ) : (
-                          <span className="text-emerald-400 print:text-emerald-700 font-semibold">Tam Gün Çalışma</span>
+                          <span className="text-emerald-400 print:!text-emerald-800 font-semibold">Tam Gün Çalışma</span>
                         )}
                       </td>
 
-                      <td className="p-2 border border-slate-800 print:border-slate-200 text-center font-mono">
+                      <td className="p-2 border border-slate-800 print:!border-slate-200 text-center font-mono">
                         {rec?.checkInTime || (rec?.type === 'FULL' ? '08:00' : '-')}
                       </td>
 
-                      <td className="p-2 border border-slate-800 print:border-slate-200 text-center font-mono">
+                      <td className="p-2 border border-slate-800 print:!border-slate-200 text-center font-mono">
                         {rec?.checkOutTime || (rec?.type === 'FULL' ? '18:00' : '-')}
                       </td>
 
-                      <td className="p-2 border border-slate-800 print:border-slate-200 text-center font-mono font-bold text-amber-400 print:text-amber-900">
+                      <td className="p-2 border border-slate-800 print:!border-slate-200 text-center font-mono font-bold text-amber-400 print:!text-amber-900">
                         {rec?.overtimeHours ? `+${rec.overtimeHours}s` : '-'}
                       </td>
                     </tr>
@@ -935,7 +961,7 @@ export const ReportsView: React.FC = () => {
 
       {/* REPORT TYPE 4: Aylık Imzalı Puantaj Cetveli */}
       {reportType === 'matrix' && (
-        <div className="bg-slate-900 print:bg-white text-slate-100 print:text-slate-900 border border-slate-800 print:border-slate-300 rounded-3xl p-6 shadow-xl space-y-6 print:p-4">
+        <div className="bg-slate-900 print:!bg-white text-slate-100 print:!text-slate-900 border border-slate-800 print:!border-slate-300 rounded-3xl p-6 shadow-xl space-y-6 print:!p-2">
           <CompanyHeaderLogo
             companyName={settings.companyName}
             title={settings.title}
@@ -944,38 +970,38 @@ export const ReportsView: React.FC = () => {
             address={settings.address}
           />
 
-          <div className="flex justify-between items-center bg-slate-950 print:bg-slate-100 p-3 rounded-2xl border border-slate-800 print:border-slate-300 print-color-exact">
-            <h2 className="text-sm font-extrabold text-amber-400 print:text-amber-900 uppercase tracking-wider">
+          <div className="flex justify-between items-center bg-slate-950 print:!bg-slate-900 print:!text-white p-3 rounded-2xl border border-slate-800 print:!border-slate-900">
+            <h2 className="text-sm font-extrabold text-amber-400 print:!text-amber-400 uppercase tracking-wider">
               AYLIK RESMİ İMZALI PUANTAJ CETVELİ
             </h2>
-            <span className="text-xs font-mono font-bold text-white print:text-slate-900 bg-slate-900 print:bg-white border border-slate-800 print:border-slate-300 px-3 py-1 rounded-xl">
+            <span className="text-xs font-mono font-bold text-white print:!text-slate-900 bg-slate-900 print:!bg-amber-400 border border-slate-800 print:!border-amber-400 px-3 py-1 rounded-xl">
               DÖNEM: {getMonthNameTr(selectedMonth)} {selectedYear}
             </span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-[10px] print:text-[9px]">
+            <table className="w-full text-left border-collapse text-[10px] print:!text-[9px]">
               <thead>
-                <tr className="bg-slate-950 print:bg-slate-800 text-slate-300 print:text-white border border-slate-800 print:border-slate-700 font-semibold print-color-exact">
-                  <th className="p-1.5 border border-slate-800 print:border-slate-700 w-36">Personel</th>
-                  <th className="p-1 border border-slate-800 print:border-slate-700 text-center w-16">Unvan</th>
+                <tr className="bg-slate-950 print:!bg-slate-900 text-slate-300 print:!text-amber-400 border border-slate-800 print:!border-slate-800 font-semibold">
+                  <th className="p-1.5 border border-slate-800 print:!border-slate-700 w-36">Personel</th>
+                  <th className="p-1 border border-slate-800 print:!border-slate-700 text-center w-16">Unvan</th>
                   {daysArray.map((d) => (
-                    <th key={d} className="p-1 border border-slate-800 print:border-slate-700 text-center w-6">
+                    <th key={d} className="p-1 border border-slate-800 print:!border-slate-700 text-center w-6">
                       {d}
                     </th>
                   ))}
-                  <th className="p-1 border border-slate-800 print:border-slate-700 text-center font-bold">Gün</th>
-                  <th className="p-1 border border-slate-800 print:border-slate-700 text-center font-bold">Mesai</th>
-                  <th className="p-1 border border-slate-800 print:border-slate-700 text-right font-bold w-20">Net Tutar</th>
+                  <th className="p-1 border border-slate-800 print:!border-slate-700 text-center font-bold">Gün</th>
+                  <th className="p-1 border border-slate-800 print:!border-slate-700 text-center font-bold">Mesai</th>
+                  <th className="p-1 border border-slate-800 print:!border-slate-700 text-right font-bold w-20">Net Tutar</th>
                 </tr>
               </thead>
               <tbody>
                 {monthlySummaries.map((s) => (
-                  <tr key={s.worker.id} className="border border-slate-800 print:border-slate-200 text-slate-200 print:text-slate-900">
-                    <td className="p-1.5 border border-slate-800 print:border-slate-200 font-bold">
+                  <tr key={s.worker.id} className="border border-slate-800 print:!border-slate-200 text-slate-200 print:!text-slate-900 print:even:!bg-slate-50">
+                    <td className="p-1.5 border border-slate-800 print:!border-slate-200 font-bold">
                       {s.worker.firstName} {s.worker.lastName}
                     </td>
-                    <td className="p-1 border border-slate-800 print:border-slate-200 text-slate-400 print:text-slate-700">
+                    <td className="p-1 border border-slate-800 print:!border-slate-200 text-slate-400 print:!text-slate-700">
                       {s.worker.role}
                     </td>
                     {daysArray.map((day) => {
@@ -993,18 +1019,18 @@ export const ReportsView: React.FC = () => {
                         else if (rec.type === 'ABSENT') val = 'X';
                       }
                       return (
-                        <td key={day} className="p-0.5 border border-slate-800 print:border-slate-200 text-center font-mono">
+                        <td key={day} className="p-0.5 border border-slate-800 print:!border-slate-200 text-center font-mono font-semibold">
                           {val}
                         </td>
                       );
                     })}
-                    <td className="p-1 border border-slate-800 print:border-slate-200 text-center font-mono font-bold text-emerald-400 print:text-emerald-800">
+                    <td className="p-1 border border-slate-800 print:!border-slate-200 text-center font-mono font-bold text-emerald-400 print:!text-emerald-800">
                       {s.totalWorkedDaysEquivalent}
                     </td>
-                    <td className="p-1 border border-slate-800 print:border-slate-200 text-center font-mono font-bold text-amber-400 print:text-amber-800">
+                    <td className="p-1 border border-slate-800 print:!border-slate-200 text-center font-mono font-bold text-amber-400 print:!text-amber-800">
                       {s.totalOvertimeHours}s
                     </td>
-                    <td className="p-1 border border-slate-800 print:border-slate-200 text-right font-mono font-bold text-amber-400 print:text-amber-900">
+                    <td className="p-1 border border-slate-800 print:!border-slate-200 text-right font-mono font-bold text-amber-400 print:!text-amber-900">
                       {formatCurrency(s.netPayable)}
                     </td>
                   </tr>
