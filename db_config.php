@@ -5,7 +5,7 @@
  */
 
 // Veritabanı Erişim Bilgileri (Kendi cPanel / MySQL bilgilerinize göre düzenleyin)
-define('DB_HOST', 'srvc58.trwww.com');
+define('DB_HOST', 'localhost');
 define('DB_PORT', '3306');
 define('DB_NAME', 'ynrmakin_ynr_pdks');
 define('DB_USER', 'ynrmakin_pdks');
