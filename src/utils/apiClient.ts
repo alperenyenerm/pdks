@@ -4,7 +4,6 @@
  */
 
 const getApiUrl = (action: string) => {
-  // Eğer göreceli yoldaysak doğrudan api.php?action=... çağrılır
   return `api.php?action=${action}`;
 };
 
@@ -156,5 +155,13 @@ export async function saveSettingsToApi(settings: any) {
     });
   } catch (err) {
     console.warn('Ayar senkronizasyon uyarısı:', err);
+  }
+}
+
+export async function clearAllDataFromApi() {
+  try {
+    await fetch(getApiUrl('clear_all'), { method: 'POST' });
+  } catch (err) {
+    console.warn('Tüm verileri temizleme uyarısı:', err);
   }
 }

@@ -402,6 +402,22 @@ try {
             echo json_encode(['success' => true, 'message' => 'Ayarlar güncellendi.'], JSON_UNESCAPED_UNICODE);
             break;
 
+        // ==========================================
+        // 10. TÜM VERİLERİ TEMİZLE (CLEAR ALL)
+        // ==========================================
+        case 'clear_all':
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+            $pdo->exec("TRUNCATE TABLE attendance");
+            $pdo->exec("TRUNCATE TABLE advances");
+            $pdo->exec("TRUNCATE TABLE workers");
+            $pdo->exec("TRUNCATE TABLE projects");
+            $pdo->exec("TRUNCATE TABLE machinery");
+            $pdo->exec("TRUNCATE TABLE disciplinary");
+            $pdo->exec("TRUNCATE TABLE audit_logs");
+            $pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+            echo json_encode(['success' => true, 'message' => 'Tüm veriler veritabanından başarıyla temizlendi.'], JSON_UNESCAPED_UNICODE);
+            break;
+
         default:
             echo json_encode(['success' => false, 'error' => 'Geçersiz API eylemi: ' . $action]);
             break;

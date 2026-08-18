@@ -41,6 +41,7 @@ import {
   saveBranchToApi,
   deleteBranchFromApi,
   saveSettingsToApi,
+  clearAllDataFromApi,
 } from '../utils/apiClient';
 
 interface AppContextType {
@@ -108,6 +109,7 @@ interface AppContextType {
   exportBackup: () => void;
   importBackup: (data: any) => boolean;
   resetDemoData: () => void;
+  clearAllData: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -135,11 +137,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     async function initDataFromApi() {
       const apiData = await fetchAllDataFromApi();
       if (apiData) {
-        if (apiData.workers && apiData.workers.length > 0) setWorkers(apiData.workers);
-        if (apiData.attendance) setAttendance(apiData.attendance);
-        if (apiData.advances) setAdvances(apiData.advances);
-        if (apiData.projects && apiData.projects.length > 0) setProjects(apiData.projects);
-        if (apiData.machinery && apiData.machinery.length > 0) setMachinery(apiData.machinery);
+        setWorkers(apiData.workers || []);
+        setAttendance(apiData.attendance || []);
+        setAdvances(apiData.advances || []);
+        setProjects(apiData.projects || []);
+        setMachinery(apiData.machinery || []);
         if (apiData.branches && apiData.branches.length > 0) setBranches(apiData.branches);
         if (apiData.holidays && apiData.holidays.length > 0) setHolidays(apiData.holidays);
         if (apiData.settings) setSettings((prev) => ({ ...prev, ...apiData.settings }));
@@ -389,6 +391,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAction('DEMO_SIFIRLA', 'AYARLAR', 'Tüm veriler fabrika ayarlarına sıfırlandı.');
   };
 
+  const clearAllData = async () => {
+    setWorkers([]);
+    setAttendance([]);
+    setAdvances([]);
+    setProjects([]);
+    setMachinery([]);
+    setDisciplinary([]);
+    setAuditLogs([]);
+    localStorage.clear();
+    await clearAllDataFromApi();
+    notify('Tüm Veriler Temizlendi', 'Sistemdeki tüm demo ve kayıtlı veriler sıfırlandı.', 'warning');
+    logAction('TUM_VERILERI_TEMIZLE', 'AYARLAR', 'Veritabanı ve yerel hafıza sıfırlandı.');
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -435,6 +451,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         exportBackup,
         importBackup,
         resetDemoData,
+        clearAllData,
       }}
     >
       {children}
