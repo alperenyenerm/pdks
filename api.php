@@ -157,7 +157,7 @@ try {
             break;
 
         // ==========================================
-        // 4. PUANTAJ YÖNETİMİ
+        // 4. PUANTAJ & CİHAZ (HARDWARE) YÖNETİMİ
         // ==========================================
         case 'save_attendance':
             // Tekli veya Çoklu Kayıt Kontrolü
@@ -194,6 +194,41 @@ try {
             $pdo->commit();
 
             echo json_encode(['success' => true, 'message' => 'Puantaj kaydedildi.'], JSON_UNESCAPED_UNICODE);
+            break;
+
+        case 'device_push':
+            // Fiziki PDKS Cihazlarından (ZKTeco, Hikvision, Parmak İzi, Yüz Tanıma, Kart Okuyucu) Otomatik Push İstekleri
+            $workerId = isset($inputData['worker_id']) ? $inputData['worker_id'] : (isset($_POST['worker_id']) ? $_POST['worker_id'] : (isset($_POST['card_no']) ? $_POST['card_no'] : (isset($inputData['card_no']) ? $inputData['card_no'] : '')));
+            $personnelCode = isset($inputData['personnel_code']) ? $inputData['personnel_code'] : (isset($_POST['personnel_code']) ? $_POST['personnel_code'] : (isset($_POST['code']) ? $_POST['code'] : ''));
+
+            if (empty($workerId) && !empty($personnelCode)) {
+                $wStmt = $pdo->prepare("SELECT id FROM workers WHERE code = :code OR tc_no = :code LIMIT 1");
+                $wStmt->execute([':code' => $personnelCode]);
+                $wRow = $wStmt->fetch();
+                if ($wRow) {
+                    $workerId = $wRow['id'];
+                }
+            }
+
+            if (!empty($workerId)) {
+                $date = isset($inputData['date']) ? $inputData['date'] : (isset($_POST['date']) ? $_POST['date'] : date('Y-m-d'));
+                $time = isset($inputData['time']) ? $inputData['time'] : (isset($_POST['time']) ? $_POST['time'] : date('H:i'));
+
+                $id = "att-{$workerId}-{$date}";
+                $stmt = $pdo->prepare("INSERT INTO attendance (id, worker_id, date, type, check_in_time, note)
+                    VALUES (:id, :worker_id, :date, 'FULL', :check_in_time, 'Cihaz Otomatik Geçiş Kaydı')
+                    ON DUPLICATE KEY UPDATE type='FULL', check_in_time=VALUES(check_in_time)");
+                $stmt->execute([
+                    ':id' => $id,
+                    ':worker_id' => $workerId,
+                    ':date' => $date,
+                    ':check_in_time' => $time
+                ]);
+
+                echo json_encode(['success' => true, 'message' => 'Cihaz geçiş kaydı MySQL veritabanına işlendi.'], JSON_UNESCAPED_UNICODE);
+            } else {
+                echo json_encode(['success' => false, 'error' => 'Sicil veya Kart Numarası ile eşleşen personel bulunamadı.'], JSON_UNESCAPED_UNICODE);
+            }
             break;
 
         // ==========================================
