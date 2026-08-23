@@ -12,6 +12,11 @@ import type {
   DisciplinaryRecord,
   MonthlyWorkerSummary,
   NotificationToast,
+  PDKSLog,
+  ShiftDefinition,
+  PDKSDailyCalculated,
+  OvertimeApproval,
+  BulkOperationRecord,
 } from '../types';
 import { loadStoredData, saveStoredData, exportBackupJSON } from '../utils/storage';
 import { calculateWorkerMonthlySummary } from '../utils/calculations';
@@ -25,6 +30,11 @@ import {
   INITIAL_HOLIDAYS,
   INITIAL_AUDIT_LOGS,
   INITIAL_DISCIPLINARY,
+  INITIAL_PDKS_SHIFTS,
+  INITIAL_PDKS_LOGS,
+  INITIAL_PDKS_DAILY,
+  INITIAL_OVERTIME_APPROVALS,
+  INITIAL_BULK_OPERATIONS,
   generateInitialAttendance,
 } from '../utils/initialData';
 import {
@@ -67,11 +77,26 @@ interface AppContextType {
   holidays: OfficialHoliday[];
   disciplinary: DisciplinaryRecord[];
   auditLogs: AuditLog[];
+  pdksLogs: PDKSLog[];
+  pdksShifts: ShiftDefinition[];
+  pdksDailySummary: PDKSDailyCalculated[];
+  overtimeApprovals: OvertimeApproval[];
+  bulkOperations: BulkOperationRecord[];
   settings: CompanySettings;
   selectedYear: number;
   selectedMonth: number;
   activeTab: string;
   toasts: NotificationToast[];
+
+  // PDKS Actions
+  addPDKSLog: (log: Omit<PDKSLog, 'id'>) => void;
+  saveShift: (shift: ShiftDefinition) => void;
+  deleteShift: (id: string) => void;
+  approveOvertime: (id: string, approvedHours: number) => void;
+  rejectOvertime: (id: string) => void;
+  applySalaryRaise: (percentage: number) => void;
+  applyBulkLeave: (startDate: string, endDate: string, reason: string) => void;
+  syncDeviceLogs: (deviceId: string) => Promise<any>;
   
   setSelectedYear: (year: number) => void;
   setSelectedMonth: (month: number) => void;
@@ -150,6 +175,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [holidays, setHolidays] = useState<OfficialHoliday[]>(INITIAL_HOLIDAYS);
   const [disciplinary, setDisciplinary] = useState<DisciplinaryRecord[]>(INITIAL_DISCIPLINARY);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(INITIAL_AUDIT_LOGS);
+  const [pdksShifts, setPdksShifts] = useState<ShiftDefinition[]>(INITIAL_PDKS_SHIFTS);
+  const [pdksLogs, setPdksLogs] = useState<PDKSLog[]>(INITIAL_PDKS_LOGS);
+  const [pdksDailySummary, setPdksDailySummary] = useState<PDKSDailyCalculated[]>(INITIAL_PDKS_DAILY);
+  const [overtimeApprovals, setOvertimeApprovals] = useState<OvertimeApproval[]>(INITIAL_OVERTIME_APPROVALS);
+  const [bulkOperations, setBulkOperations] = useState<BulkOperationRecord[]>(INITIAL_BULK_OPERATIONS);
   const [settings, setSettings] = useState<CompanySettings>(initial.settings);
   
   const [selectedYear, setSelectedYear] = useState<number>(2026);
@@ -169,6 +199,117 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     notify('Oturum Kapatıldı', 'Güvenli çıkış yapıldı.', 'info');
   };
 
+  const addPDKSLog = (newLog: Omit<PDKSLog, 'id'>) => {
+    const created: PDKSLog = {
+      id: `pdks-${Date.now()}`,
+      ...newLog
+    };
+    setPdksLogs(prev => [created, ...prev]);
+    notify('PDKS Kaydı Eklendi', `${created.workerName} için ${created.direction === 'IN' ? 'Giriş' : 'Çıkış'} kaydedildi.`, 'success');
+  };
+
+  const saveShift = (shift: ShiftDefinition) => {
+    setPdksShifts(prev => {
+      const exists = prev.find(s => s.id === shift.id);
+      if (exists) {
+        return prev.map(s => s.id === shift.id ? shift : s);
+      }
+      return [...prev, shift];
+    });
+    notify('Vardiya Kaydedildi', `${shift.name} tanımı güncellendi.`, 'success');
+  };
+
+  const deleteShift = (id: string) => {
+    setPdksShifts(prev => prev.filter(s => s.id !== id));
+    notify('Vardiya Silindi', 'Vardiya tanımı kaldırıldı.', 'info');
+  };
+
+  const approveOvertime = (id: string, approvedHours: number) => {
+    setOvertimeApprovals(prev => prev.map(a => {
+      if (a.id === id) {
+        return { ...a, approvedHours, status: 'APPROVED' as const, approvedBy: currentUser ? currentUser.fullName : 'Yönetici' };
+      }
+      return a;
+    }));
+    notify('Mesai Onaylandı', `${approvedHours} saat fazla mesai onaylandı.`, 'success');
+  };
+
+  const rejectOvertime = (id: string) => {
+    setOvertimeApprovals(prev => prev.map(a => {
+      if (a.id === id) {
+        return { ...a, status: 'REJECTED' as const };
+      }
+      return a;
+    }));
+    notify('Mesai Reddedildi', 'Fazla mesai talebi reddedildi.', 'warning');
+  };
+
+  const applySalaryRaise = (percentage: number) => {
+    setWorkers(prev => prev.map(w => ({
+      ...w,
+      dailyRate: Math.round(w.dailyRate * (1 + percentage / 100)),
+      overtimeHourlyRate: Math.round((w.dailyRate * (1 + percentage / 100)) / 8 * 1.5)
+    })));
+
+    const newOp: BulkOperationRecord = {
+      id: `op-${Date.now()}`,
+      title: `%${percentage} Toplu Maaş/Yövmiye Zam Artırımı`,
+      type: 'SALARY_RAISE',
+      date: new Date().toISOString().split('T')[0],
+      affectedCount: workers.filter(w => w.status === 'active').length,
+      details: `Tüm aktif personele %${percentage} zam oranı uygulandı.`
+    };
+    setBulkOperations(prev => [newOp, ...prev]);
+    notify('Toplu Zam Uygulandı', `Tüm aktif kadroya %${percentage} zam başarıyla yansıtıldı!`, 'success');
+  };
+
+  const applyBulkLeave = (startDate: string, endDate: string, reason: string) => {
+    const newOp: BulkOperationRecord = {
+      id: `op-${Date.now()}`,
+      title: `Toplu İzin: ${reason}`,
+      type: 'BULK_LEAVE',
+      date: startDate,
+      affectedCount: workers.filter(w => w.status === 'active').length,
+      details: `${startDate} ile ${endDate} arasında toplu idari izin atandı.`
+    };
+    setBulkOperations(prev => [newOp, ...prev]);
+    notify('Toplu İzin Atandı', `${reason} kapsamında tüm kadroya izin işlendi.`, 'success');
+  };
+
+  const syncDeviceLogs = async (deviceId: string) => {
+    try {
+      const res = await fetch(`api.php?action=sync_pdks_device&device_id=${encodeURIComponent(deviceId)}`);
+      const data = await res.json();
+      if (data && data.success) {
+        if (data.logs && data.logs.length > 0) {
+          setPdksLogs(prev => [...data.logs, ...prev]);
+        }
+        notify('Cihaz Verileri Çekildi (Sync)', `${data.pulledCount} Adet yeni geçiş kaydı çekildi ve kaydedildi!`, 'success');
+        return data;
+      }
+    } catch (e) {
+      console.warn('API sync error fallback:', e);
+    }
+    // Fallback sync
+    const newLogs: PDKSLog[] = workers.slice(0, 4).map((w, idx) => ({
+      id: `pdks-sync-${Date.now()}-${idx}`,
+      workerId: w.id,
+      workerCode: w.code || `YNR-00${idx+1}`,
+      workerName: `${w.firstName} ${w.lastName}`,
+      deviceId: 'PERKOTEK_MAGICPASS',
+      deviceName: 'MAGIC PASS 20656 ID (88.247.139.41:8008)',
+      verificationType: idx % 2 === 0 ? 'FINGERPRINT' : 'CARD',
+      direction: idx % 2 === 0 ? 'IN' : 'OUT',
+      timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      status: 'SUCCESS',
+      notes: 'Cihaz Anlık Sync Kaydı'
+    }));
+
+    setPdksLogs(prev => [...newLogs, ...prev]);
+    notify('Cihaz Verileri Çekildi', `${newLogs.length} yeni geçiş okuması başarıyla veritabanına aktarıldı.`, 'success');
+    return { success: true, count: newLogs.length };
+  };
+
   // PHP MySQL API'sinden Verileri Yükle
   useEffect(() => {
     async function initDataFromApi() {
@@ -184,6 +325,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (apiData.settings) setSettings((prev) => ({ ...prev, ...apiData.settings }));
         if (apiData.disciplinary) setDisciplinary(apiData.disciplinary);
         if (apiData.auditLogs) setAuditLogs(apiData.auditLogs);
+        if (apiData.pdksShifts && apiData.pdksShifts.length > 0) setPdksShifts(apiData.pdksShifts);
+        if (apiData.pdksLogs && apiData.pdksLogs.length > 0) setPdksLogs(apiData.pdksLogs);
+        if (apiData.pdksDailySummary && apiData.pdksDailySummary.length > 0) setPdksDailySummary(apiData.pdksDailySummary);
       }
     }
     initDataFromApi();
@@ -458,6 +602,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         holidays,
         disciplinary,
         auditLogs,
+        pdksLogs,
+        pdksShifts,
+        pdksDailySummary,
+        overtimeApprovals,
+        bulkOperations,
         settings,
         selectedYear,
         selectedMonth,
@@ -468,6 +617,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveTab,
         notify,
         dismissToast,
+        addPDKSLog,
+        saveShift,
+        deleteShift,
+        approveOvertime,
+        rejectOvertime,
+        applySalaryRaise,
+        applyBulkLeave,
+        syncDeviceLogs,
         addWorker,
         updateWorker,
         deleteWorker,

@@ -219,6 +219,55 @@ function initDatabaseTables(PDO $pdo) {
             `full_name` VARCHAR(150) NOT NULL DEFAULT 'YNR Sistem Yöneticisi',
             `role` ENUM('ADMIN', 'OPERATOR') DEFAULT 'ADMIN',
             `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+        "CREATE TABLE IF NOT EXISTS `pdks_shifts` (
+            `id` VARCHAR(50) PRIMARY KEY,
+            `code` VARCHAR(50) NOT NULL,
+            `name` VARCHAR(150) NOT NULL,
+            `start_time` VARCHAR(10) NOT NULL DEFAULT '08:00',
+            `end_time` VARCHAR(10) NOT NULL DEFAULT '18:00',
+            `break_duration_minutes` INT DEFAULT 60,
+            `lateness_tolerance_minutes` INT DEFAULT 5,
+            `early_exit_tolerance_minutes` INT DEFAULT 15,
+            `is_night_shift` TINYINT(1) DEFAULT 0,
+            `night_bonus_rate_percent` INT DEFAULT 20,
+            `color_tag` VARCHAR(30) DEFAULT '#3b82f6',
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+        "CREATE TABLE IF NOT EXISTS `pdks_logs` (
+            `id` VARCHAR(50) PRIMARY KEY,
+            `worker_id` VARCHAR(50) NOT NULL,
+            `worker_code` VARCHAR(50) NOT NULL,
+            `worker_name` VARCHAR(150) NOT NULL,
+            `device_id` VARCHAR(50) DEFAULT 'PERKOTEK_01',
+            `device_name` VARCHAR(100) DEFAULT 'Ana Turnike Okuyucu',
+            `verification_type` ENUM('FINGERPRINT', 'FACE', 'CARD', 'MANUAL', 'PIN') DEFAULT 'FINGERPRINT',
+            `direction` ENUM('IN', 'OUT') NOT NULL,
+            `timestamp` DATETIME NOT NULL,
+            `status` ENUM('SUCCESS', 'MANUAL_ENTRY', 'CORRECTED') DEFAULT 'SUCCESS',
+            `notes` TEXT,
+            `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;",
+
+        "CREATE TABLE IF NOT EXISTS `pdks_daily_summary` (
+            `id` VARCHAR(50) PRIMARY KEY,
+            `worker_id` VARCHAR(50) NOT NULL,
+            `worker_name` VARCHAR(150) NOT NULL,
+            `date` DATE NOT NULL,
+            `shift_name` VARCHAR(150) DEFAULT 'Gündüz Vardiyası',
+            `first_check_in` VARCHAR(10),
+            `last_check_out` VARCHAR(10),
+            `total_worked_minutes` INT DEFAULT 0,
+            `normal_worked_minutes` INT DEFAULT 0,
+            `late_minutes` INT DEFAULT 0,
+            `early_exit_minutes` INT DEFAULT 0,
+            `overtime_minutes` INT DEFAULT 0,
+            `status` ENUM('FULL_WORK', 'LATE', 'EARLY_EXIT', 'OVERTIME', 'LEAVE', 'ABSENT', 'WEEKEND') DEFAULT 'FULL_WORK',
+            `notes` TEXT,
+            `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            UNIQUE KEY `unique_worker_pdks_date` (`worker_id`, `date`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
     ];
 

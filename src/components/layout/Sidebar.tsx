@@ -16,6 +16,16 @@ import {
   Award,
   History,
   HardHat,
+  Fingerprint,
+  Activity,
+  Clock,
+  FileText,
+  UserCheck,
+  SlidersHorizontal,
+  Receipt,
+  PieChart,
+  Wrench,
+  Database
 } from 'lucide-react';
 
 interface NavSection {
@@ -32,6 +42,76 @@ export const Sidebar: React.FC = () => {
   const { activeTab, setActiveTab, workers, projects, machinery, branches } = useApp();
 
   const navSections: NavSection[] = [
+    {
+      title: 'Perkotek Web PDKS',
+      items: [
+        {
+          id: 'pdks_dashboard',
+          label: 'PDKS Canlı Pano',
+          icon: <Activity className="w-4 h-4 text-blue-400" />,
+          badge: 'CANLI',
+        },
+        {
+          id: 'pdks_logs',
+          label: 'Giriş / Çıkış Logları',
+          icon: <Fingerprint className="w-4 h-4 text-emerald-400" />,
+        },
+        {
+          id: 'pdks_shifts',
+          label: 'Vardiya & Tolerans',
+          icon: <Clock className="w-4 h-4 text-indigo-400" />,
+        },
+        {
+          id: 'pdks_overtime_approval',
+          label: 'FM Onay Ekranı',
+          icon: <UserCheck className="w-4 h-4 text-purple-400" />,
+          badge: 'YÖNETİCİ',
+        },
+        {
+          id: 'pdks_bulk_ops',
+          label: 'Toplu İşlemler & Zam',
+          icon: <SlidersHorizontal className="w-4 h-4 text-emerald-400" />,
+        },
+        {
+          id: 'pdks_payroll_slips',
+          label: 'Maaş Ekstresi & Pusulası',
+          icon: <Receipt className="w-4 h-4 text-blue-400" />,
+        },
+        {
+          id: 'pdks_devices',
+          label: 'Cihazlar & IP Sync',
+          icon: <Cpu className="w-4 h-4 text-cyan-400" />,
+          badge: 'MAGIC PASS',
+        },
+        {
+          id: 'pdks_import',
+          label: 'Komple Data Aktarımı',
+          icon: <Database className="w-4 h-4 text-emerald-400" />,
+          badge: '74 PERSONEL',
+        },
+        {
+          id: 'pdks_catalog',
+          label: 'Raporlar Kataloğu',
+          icon: <PieChart className="w-4 h-4 text-purple-400" />,
+          badge: '34 RAPOR',
+        },
+        {
+          id: 'pdks_schedule',
+          label: 'Vardiya Takvimi & Planlar',
+          icon: <Calendar className="w-4 h-4 text-emerald-400" />,
+        },
+        {
+          id: 'pdks_definitions',
+          label: 'Genel Tanımlar & Nedenler',
+          icon: <Wrench className="w-4 h-4 text-indigo-400" />,
+        },
+        {
+          id: 'pdks_reports',
+          label: 'PDKS Puantaj Raporu',
+          icon: <FileText className="w-4 h-4 text-amber-400" />,
+        },
+      ],
+    },
     {
       title: 'Operasyon & Puantaj',
       items: [

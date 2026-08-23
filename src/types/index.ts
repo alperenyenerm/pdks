@@ -23,6 +23,10 @@ export interface Worker {
   phone: string;
   iban: string;
   department: string;
+  cardNumber?: string; // Kart No (Perkotek)
+  accountGroup?: string; // Hes. Grubu / Sabit Grup (Perkotek)
+  isSeparated?: boolean; // İşten Ayrılanlar (Perkotek)
+  separationDate?: string;
   branchId?: string; // Şantiye / Şube ID
   status: 'active' | 'passive';
   startDate: string;
@@ -31,6 +35,55 @@ export interface Worker {
   skillLevel?: 'Usta' | 'Uzman' | 'Kalfa' | 'Mühendis' | 'Operatör' | 'Çırak';
   notes?: string;
   avatarColor?: string;
+}
+
+export interface OvertimeApproval {
+  id: string;
+  workerId: string;
+  workerName: string;
+  date: string;
+  calculatedHours: number;
+  approvedHours: number;
+  multiplier: number;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  approvedBy?: string;
+  notes?: string;
+}
+
+export interface PDKSDevice {
+  id: string;
+  name: string;
+  model: string; // e.g. "MAGIC PASS 20656 ID"
+  serialNumber: string; // e.g. "C2609CD64315222B"
+  ipAddress: string; // e.g. "88.247.139.41"
+  port: number; // e.g. 8008
+  location: string; // e.g. "MERKEZ"
+  functionType: string; // e.g. "Standart"
+  status: 'ONLINE' | 'OFFLINE' | 'CHECKING';
+  lastSyncTime: string; // e.g. "21.08.2026 / 18:05:56"
+}
+
+export interface BulkOperationRecord {
+  id: string;
+  title: string;
+  type: 'SALARY_RAISE' | 'BULK_LOG' | 'BULK_LEAVE' | 'BULK_ADVANCE' | 'BULK_BONUS' | 'BULK_CORRECT';
+  date: string;
+  affectedCount: number;
+  details: string;
+}
+
+export interface PayrollSlip {
+  workerId: string;
+  workerName: string;
+  period: string; // YYYY-MM
+  baseDailyRate: number;
+  totalWorkedDays: number;
+  baseEarnings: number;
+  overtimeEarnings: number;
+  bonuses: number;
+  deductions: number;
+  advances: number;
+  netSalary: number;
 }
 
 export interface AttendanceRecord {
@@ -59,6 +112,51 @@ export interface MagicPassLog {
   eventState: 'IN' | 'OUT' | 'CHECK';
   processed: boolean;
   workerName?: string;
+}
+
+export interface PDKSLog {
+  id: string;
+  workerId: string;
+  workerCode: string;
+  workerName: string;
+  deviceId: string;
+  deviceName: string;
+  verificationType: 'FINGERPRINT' | 'FACE' | 'CARD' | 'MANUAL' | 'PIN';
+  direction: 'IN' | 'OUT';
+  timestamp: string; // YYYY-MM-DD HH:mm:ss
+  status: 'SUCCESS' | 'MANUAL_ENTRY' | 'CORRECTED';
+  notes?: string;
+}
+
+export interface ShiftDefinition {
+  id: string;
+  code: string;
+  name: string; // e.g. "Gündüz Vardiyası (08:00 - 18:00)"
+  startTime: string; // "08:00"
+  endTime: string; // "18:00"
+  breakDurationMinutes: number; // e.g. 60
+  latenessToleranceMinutes: number; // e.g. 5
+  earlyExitToleranceMinutes: number; // e.g. 15
+  isNightShift: boolean;
+  nightBonusRatePercent?: number; // e.g. 20
+  colorTag?: string;
+}
+
+export interface PDKSDailyCalculated {
+  id: string;
+  workerId: string;
+  workerName: string;
+  date: string; // YYYY-MM-DD
+  shiftName: string;
+  firstCheckIn?: string; // "07:54"
+  lastCheckOut?: string; // "18:32"
+  totalWorkedMinutes: number;
+  normalWorkedMinutes: number;
+  lateMinutes: number;
+  earlyExitMinutes: number;
+  overtimeMinutes: number;
+  status: 'FULL_WORK' | 'LATE' | 'EARLY_EXIT' | 'OVERTIME' | 'LEAVE' | 'ABSENT' | 'WEEKEND';
+  notes?: string;
 }
 
 export interface AdvancePayment {

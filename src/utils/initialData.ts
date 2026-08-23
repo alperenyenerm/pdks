@@ -473,3 +473,152 @@ export const INITIAL_DISCIPLINARY: DisciplinaryRecord[] = [
     description: 'Sabah 08:00 vardiyasına 45 dakika geç katılındı.',
   },
 ];
+
+export const INITIAL_PDKS_SHIFTS = [
+  {
+    id: 'shift-1',
+    code: 'VARD_01',
+    name: 'Gündüz Vardiyası (Sabit)',
+    startTime: '08:00',
+    endTime: '18:00',
+    breakDurationMinutes: 60,
+    latenessToleranceMinutes: 5,
+    earlyExitToleranceMinutes: 15,
+    isNightShift: false,
+    colorTag: '#3b82f6'
+  },
+  {
+    id: 'shift-2',
+    code: 'VARD_02',
+    name: 'Gece Vardiyası (%20 Prim)',
+    startTime: '18:00',
+    endTime: '04:00',
+    breakDurationMinutes: 60,
+    latenessToleranceMinutes: 5,
+    earlyExitToleranceMinutes: 15,
+    isNightShift: true,
+    nightBonusRatePercent: 20,
+    colorTag: '#a855f7'
+  }
+];
+
+export const INITIAL_PDKS_LOGS = [
+  {
+    id: 'pdks-1',
+    workerId: 'w-1',
+    workerCode: 'YNR-001',
+    workerName: 'Ahmet Yılmaz',
+    deviceId: 'PERKOTEK_01',
+    deviceName: 'Ana Turnike Okuyucu',
+    verificationType: 'FINGERPRINT' as const,
+    direction: 'IN' as const,
+    timestamp: '2026-08-22 07:54:12',
+    status: 'SUCCESS' as const,
+    notes: 'Zamanında Giriş'
+  },
+  {
+    id: 'pdks-2',
+    workerId: 'w-2',
+    workerCode: 'YNR-002',
+    workerName: 'Mehmet Demir',
+    deviceId: 'PERKOTEK_01',
+    deviceName: 'Ana Turnike Okuyucu',
+    verificationType: 'FACE' as const,
+    direction: 'IN' as const,
+    timestamp: '2026-08-22 07:58:40',
+    status: 'SUCCESS' as const
+  },
+  {
+    id: 'pdks-3',
+    workerId: 'w-3',
+    workerCode: 'YNR-003',
+    workerName: 'Mustafa Kaya',
+    deviceId: 'PERKOTEK_01',
+    deviceName: 'Ana Turnike Okuyucu',
+    verificationType: 'CARD' as const,
+    direction: 'IN' as const,
+    timestamp: '2026-08-22 08:12:05',
+    status: 'MANUAL_ENTRY' as const,
+    notes: '12 Dk Gecikmeli Giriş'
+  }
+];
+
+export const INITIAL_PDKS_DAILY = [
+  {
+    id: 'daily-1',
+    workerId: 'w-1',
+    workerName: 'Ahmet Yılmaz',
+    date: '2026-08-22',
+    shiftName: 'Gündüz Vardiyası',
+    firstCheckIn: '07:54',
+    lastCheckOut: '18:30',
+    totalWorkedMinutes: 576,
+    normalWorkedMinutes: 540,
+    lateMinutes: 0,
+    earlyExitMinutes: 0,
+    overtimeMinutes: 30,
+    status: 'OVERTIME' as const,
+    notes: '30 dk mesai kaldı'
+  },
+  {
+    id: 'daily-2',
+    workerId: 'w-3',
+    workerName: 'Mustafa Kaya',
+    date: '2026-08-22',
+    shiftName: 'Gündüz Vardiyası',
+    firstCheckIn: '08:12',
+    lastCheckOut: '18:00',
+    totalWorkedMinutes: 528,
+    normalWorkedMinutes: 528,
+    lateMinutes: 12,
+    earlyExitMinutes: 0,
+    overtimeMinutes: 0,
+    status: 'LATE' as const,
+    notes: '12 dk geç kalındı'
+  }
+];
+
+export const INITIAL_OVERTIME_APPROVALS = [
+  {
+    id: 'fm-1',
+    workerId: 'w-1',
+    workerName: 'Ahmet Yılmaz',
+    date: '2026-08-21',
+    calculatedHours: 3.0,
+    approvedHours: 3.0,
+    multiplier: 1.5,
+    status: 'APPROVED' as const,
+    approvedBy: 'Yaşar Yılmaz (Fabrika Müdürü)',
+    notes: 'Ağır imalat montaj mesaisi'
+  },
+  {
+    id: 'fm-2',
+    workerId: 'w-2',
+    workerName: 'Mehmet Demir',
+    date: '2026-08-21',
+    calculatedHours: 2.5,
+    approvedHours: 2.0,
+    multiplier: 1.5,
+    status: 'PENDING' as const,
+    notes: 'Vardiya amiri onayı bekliyor'
+  }
+];
+
+export const INITIAL_BULK_OPERATIONS = [
+  {
+    id: 'bulk-1',
+    title: '%15 Toplu Maaş/Yövmiye Zam Artırımı',
+    type: 'SALARY_RAISE' as const,
+    date: '2026-08-01',
+    affectedCount: 74,
+    details: 'Tüm imalat kadrosuna yıllık enflasyon zammı uygulandı.'
+  },
+  {
+    id: 'bulk-2',
+    title: 'Toplu Resmi Tatil İzni İşleme',
+    type: 'BULK_LEAVE' as const,
+    date: '2026-07-15',
+    affectedCount: 74,
+    details: '15 Temmuz Demokrasi Bayramı tüm personele resmi tatil olarak atandı.'
+  }
+];
