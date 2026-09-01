@@ -388,7 +388,7 @@ try {
             $stmt = $pdo->prepare("INSERT INTO attendance (id, worker_id, date, type, overtime_hours, overtime_multiplier, shift, project_id, machinery_id, branch_id, meal_allowance, transport_allowance, check_in_time, check_out_time, note)
                 VALUES (:id, :worker_id, :date, :type, :overtime_hours, :overtime_multiplier, :shift, :project_id, :machinery_id, :branch_id, :meal_allowance, :transport_allowance, :check_in_time, :check_out_time, :note)
                 ON DUPLICATE KEY UPDATE
-                type=VALUES(type), overtime_hours=VALUES(overtime_hours), overtime_multiplier=VALUES(overtime_multiplier), shift=VALUES(shift), project_id=VALUES(project_id), machinery_id=VALUES(machinery_id), meal_allowance=VALUES(meal_allowance), transport_allowance=VALUES(transport_allowance), note=VALUES(note)");
+                type=VALUES(type), overtime_hours=VALUES(overtime_hours), overtime_multiplier=VALUES(overtime_multiplier), shift=VALUES(shift), project_id=VALUES(project_id), machinery_id=VALUES(machinery_id), meal_allowance=VALUES(meal_allowance), transport_allowance=VALUES(transport_allowance), check_in_time=VALUES(check_in_time), check_out_time=VALUES(check_out_time), note=VALUES(note)");
 
             $pdo->beginTransaction();
             foreach ($records as $r) {
