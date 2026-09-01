@@ -25,16 +25,18 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
   workers: _workers,
   onImportSuccess
 }) => {
-  const { bulkAddWorkers, notify } = useApp();
+  const { bulkAddWorkers, bulkSetAttendance, notify } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [importedLogsCount, setImportedLogsCount] = useState<number | null>(null);
   const [selectedSource, setSelectedSource] = useState<'DEVICE' | 'FILE' | 'PERKOTEK_CLOUD'>('FILE');
 
-  // Excel Upload States
+  // Excel / Report Upload States
   const [isDragging, setIsDragging] = useState(false);
   const [parsedWorkers, setParsedWorkers] = useState<Worker[]>([]);
+  const [parsedAttendance, setParsedAttendance] = useState<any[]>([]);
+  const [reportMeta, setReportMeta] = useState<{ title?: string; period?: string } | null>(null);
   const [uploadFileName, setUploadFileName] = useState<string>('');
   const [parseError, setParseError] = useState<string | null>(null);
 
@@ -59,18 +61,27 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
   const processFile = async (file: File) => {
     setParseError(null);
     setParsedWorkers([]);
+    setParsedAttendance([]);
+    setReportMeta(null);
     setUploadFileName(file.name);
 
     try {
       setIsProcessing(true);
-      const extractedWorkers = await parseWorkersFromExcel(file);
-      if (extractedWorkers.length === 0) {
-        throw new Error('Dosyada geçerli personel kaydı bulunamadı. Lütfen sütun başlıklarını kontrol edin.');
+      const res = await parseWorkersFromExcel(file);
+      if (res.workers.length === 0) {
+        throw new Error('Dosyada geçerli personel kaydı bulunamadı. Lütfen dosyanızı kontrol edin.');
       }
-      setParsedWorkers(extractedWorkers);
-      notify('Excel Okundu', `${extractedWorkers.length} adet personel kaydı başarıyla ayrıştırıldı.`, 'info');
+      setParsedWorkers(res.workers);
+      setParsedAttendance(res.attendance || []);
+      setReportMeta({ title: res.reportTitle, period: res.period });
+      
+      if (res.attendance && res.attendance.length > 0) {
+        notify('Perkotek Bordrosu Okundu', `${res.workers.length} personel ve ${res.attendance.length} günlük puantaj/geçiş kaydı hazırlandı!`, 'success');
+      } else {
+        notify('Dosya Okundu', `${res.workers.length} adet personel kaydı başarıyla ayrıştırıldı.`, 'info');
+      }
     } catch (err: any) {
-      setParseError(err.message || 'Excel dosyası okunurken hata oluştu.');
+      setParseError(err.message || 'Dosya okunurken hata oluştu.');
       notify('Okuma Hatası', err.message || 'Dosya okunamadı.', 'error');
     } finally {
       setIsProcessing(false);
@@ -98,9 +109,14 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
   const handleSaveImportedWorkers = () => {
     if (parsedWorkers.length === 0) return;
     bulkAddWorkers(parsedWorkers);
+    if (parsedAttendance.length > 0) {
+      bulkSetAttendance(parsedAttendance);
+    }
     setImportedLogsCount(parsedWorkers.length);
     onImportSuccess(parsedWorkers.length);
     setParsedWorkers([]);
+    setParsedAttendance([]);
+    setReportMeta(null);
     setUploadFileName('');
   };
 
@@ -294,14 +310,25 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
           {parsedWorkers.length > 0 && (
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                  <Users className="w-4 h-4" />
-                  <span>Okunan Personel Önizlemesi ({parsedWorkers.length} Kişi)</span>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                    <Users className="w-4 h-4" />
+                    <span>Okunan Personel Önizlemesi ({parsedWorkers.length} Kişi)</span>
+                  </div>
+                  {parsedAttendance.length > 0 && (
+                    <div className="text-[11px] text-cyan-400 font-medium flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded">
+                        🎯 Perkotek Bordrosu: {reportMeta?.period || 'Ağustos Dönemi'} ({parsedAttendance.length} Günlük Puantaj / Geçiş Kaydı Dahil)
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
                       setParsedWorkers([]);
+                      setParsedAttendance([]);
+                      setReportMeta(null);
                       setUploadFileName('');
                     }}
                     className="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs rounded-lg transition"
@@ -313,7 +340,11 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
                     className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg shadow-lg flex items-center gap-1.5 transition"
                   >
                     <Check className="w-4 h-4" />
-                    <span>{parsedWorkers.length} Personeli Sisteme Aktar</span>
+                    <span>
+                      {parsedAttendance.length > 0
+                        ? `${parsedWorkers.length} Personel & Puantajları Aktar`
+                        : `${parsedWorkers.length} Personeli Sisteme Aktar`}
+                    </span>
                   </button>
                 </div>
               </div>

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 
 export const WorkerManagement: React.FC = () => {
-  const { workers, monthlySummaries, addWorker, bulkAddWorkers, updateWorker, deleteWorker, notify } = useApp();
+  const { workers, monthlySummaries, addWorker, bulkAddWorkers, bulkSetAttendance, updateWorker, deleteWorker, notify } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -135,15 +135,20 @@ export const WorkerManagement: React.FC = () => {
 
     try {
       setIsImporting(true);
-      const parsed = await parseWorkersFromExcel(file);
-      if (parsed.length === 0) {
-        notify('Uyarı', 'Excel dosyasında personel kaydı bulunamadı.', 'warning');
+      const res = await parseWorkersFromExcel(file);
+      if (res.workers.length === 0) {
+        notify('Uyarı', 'Dosyada personel kaydı bulunamadı.', 'warning');
         return;
       }
-      bulkAddWorkers(parsed);
-      notify('Excel Yüklendi', `${parsed.length} personel başarıyla aktarıldı ve kaydedildi.`, 'success');
+      bulkAddWorkers(res.workers);
+      if (res.attendance && res.attendance.length > 0) {
+        bulkSetAttendance(res.attendance);
+        notify('Perkotek Bordro ve Puantaj Yüklendi', `${res.workers.length} personel ve ${res.attendance.length} günlük puantaj kaydı başarıyla aktarıldı.`, 'success');
+      } else {
+        notify('Personeller Yüklendi', `${res.workers.length} personel başarıyla aktarıldı ve kaydedildi.`, 'success');
+      }
     } catch (err: any) {
-      notify('Hata', err.message || 'Excel dosyası okunamadı.', 'error');
+      notify('Hata', err.message || 'Dosya okunamadı.', 'error');
     } finally {
       setIsImporting(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
