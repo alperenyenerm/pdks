@@ -466,13 +466,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const bulkSetAttendance = (recList: (Omit<AttendanceRecord, 'id'> & { id?: string })[]) => {
-    const preparedList = recList.map((recData) => ({
-      ...recData,
-      id: recData.id || `att-${recData.workerId}-${recData.date}`,
-    }));
+    // Kart Numarasına veya Sicil Koduna göre personelle eşleştir
+    const preparedList = recList.map((recData) => {
+      let targetWorkerId = recData.workerId;
+      const cleanCard = String(recData.workerId).replace('w-card-', '').trim();
+
+      const matched = workers.find(
+        (w) =>
+          w.id === targetWorkerId ||
+          (w.cardNumber && (w.cardNumber === cleanCard || String(w.cardNumber).replace(/^0+/, '') === cleanCard.replace(/^0+/, ''))) ||
+          (w.code && (w.code === cleanCard || w.code === targetWorkerId))
+      );
+
+      if (matched) {
+        targetWorkerId = matched.id;
+      }
+
+      return {
+        ...recData,
+        workerId: targetWorkerId,
+        id: `att-${targetWorkerId}-${recData.date}`,
+      };
+    });
 
     setAttendance((prev) => {
-      let next = [...prev];
+      const next = [...prev];
       preparedList.forEach((fullRecord) => {
         const idx = next.findIndex((item) => item.workerId === fullRecord.workerId && item.date === fullRecord.date);
         if (idx >= 0) {
@@ -483,9 +501,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
       return next;
     });
+
     saveAttendanceToApi(preparedList);
-    notify('Toplu Puantaj Girişi', `${recList.length} personele puantaj kaydı uygulandı.`, 'success');
-    logAction('TOPLU_PUANTAJ', 'PUANTAJ', `${recList.length} personele puantaj kaydı yazıldı.`);
+    notify('Toplu Puantaj Girişi', `${recList.length} adet günlük puantaj ve geçiş kaydı kart numaralarına göre personellere işlendi.`, 'success');
+    logAction('TOPLU_PUANTAJ', 'PUANTAJ', `${recList.length} adet puantaj kaydı yazıldı.`);
   };
 
   const addAdvance = (adv: Omit<AdvancePayment, 'id'>) => {

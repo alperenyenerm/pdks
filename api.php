@@ -391,13 +391,25 @@ try {
                 type=VALUES(type), overtime_hours=VALUES(overtime_hours), overtime_multiplier=VALUES(overtime_multiplier), shift=VALUES(shift), project_id=VALUES(project_id), machinery_id=VALUES(machinery_id), meal_allowance=VALUES(meal_allowance), transport_allowance=VALUES(transport_allowance), check_in_time=VALUES(check_in_time), check_out_time=VALUES(check_out_time), note=VALUES(note)");
 
             $pdo->beginTransaction();
+            $wCheckStmt = $pdo->prepare("SELECT id FROM workers WHERE id = :wid OR card_number = :wid OR code = :wid OR card_number = :cleanWid LIMIT 1");
+
             foreach ($records as $r) {
                 if (empty($r['workerId']) || empty($r['date'])) continue;
-                $id = !empty($r['id']) ? $r['id'] : "att-{$r['workerId']}-{$r['date']}";
+
+                $targetWid = $r['workerId'];
+                // Kart No veya w-card- prefixini temizle
+                $cleanWid = str_replace('w-card-', '', $targetWid);
+                $wCheckStmt->execute([':wid' => $targetWid, ':cleanWid' => $cleanWid]);
+                $foundW = $wCheckStmt->fetch(PDO::FETCH_ASSOC);
+                if ($foundW) {
+                    $targetWid = (string)$foundW['id'];
+                }
+
+                $id = !empty($r['id']) ? $r['id'] : "att-{$targetWid}-{$r['date']}";
                 
                 $stmt->execute([
                     ':id' => $id,
-                    ':worker_id' => $r['workerId'],
+                    ':worker_id' => $targetWid,
                     ':date' => $r['date'],
                     ':type' => isset($r['type']) ? $r['type'] : 'FULL',
                     ':overtime_hours' => isset($r['overtimeHours']) ? $r['overtimeHours'] : 0,
