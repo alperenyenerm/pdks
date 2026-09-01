@@ -232,3 +232,29 @@ export async function pushMagicPassLogToApi(logData: { worker_code: string; time
     return { success: false, error: 'Sunucu ile iletişim kurulamadı.' };
   }
 }
+
+export async function syncPdksDeviceApi(deviceId: string = 'MP 20656', ip: string = '88.247.139.41', port: number = 8008) {
+  try {
+    const res = await fetch(getApiUrl(`sync_pdks_device&device_id=${encodeURIComponent(deviceId)}&ip=${encodeURIComponent(ip)}&port=${port}`), {
+      cache: 'no-store'
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    console.warn('Cihaz senkronizasyon hatası:', err);
+    return null;
+  }
+}
+
+export async function checkDeviceStatusApi(ip: string = '88.247.139.41', port: number = 8008) {
+  try {
+    const res = await fetch(getApiUrl(`check_device_status&ip=${encodeURIComponent(ip)}&port=${port}`), {
+      cache: 'no-store'
+    });
+    if (!res.ok) return { success: false, status: 'OFFLINE' };
+    return await res.json();
+  } catch (err) {
+    return { success: false, status: 'OFFLINE', error: 'Sunucuya ulaşılamadı' };
+  }
+}
+

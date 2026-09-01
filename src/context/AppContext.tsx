@@ -52,6 +52,7 @@ import {
   deleteBranchFromApi,
   saveSettingsToApi,
   clearAllDataFromApi,
+  syncPdksDeviceApi,
 } from '../utils/apiClient';
 
 interface UserSession {
@@ -279,13 +280,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const syncDeviceLogs = async (deviceId: string) => {
     try {
-      const res = await fetch(`api.php?action=sync_pdks_device&device_id=${encodeURIComponent(deviceId)}`);
-      const data = await res.json();
+      const data = await syncPdksDeviceApi(deviceId);
       if (data && data.success) {
         if (data.logs && data.logs.length > 0) {
-          setPdksLogs(prev => [...data.logs, ...prev]);
+          setPdksLogs(data.logs);
         }
-        notify('Cihaz Verileri Çekildi (Sync)', `${data.pulledCount} Adet yeni geçiş kaydı çekildi ve kaydedildi!`, 'success');
+        if (data.attendance && data.attendance.length > 0) {
+          setAttendance(data.attendance);
+        }
+        if (data.dailySummary && data.dailySummary.length > 0) {
+          setPdksDailySummary(data.dailySummary);
+        }
+        notify('Cihaz Verileri Çekildi (Sync)', `${data.pulledCount} adet geçiş kaydı ve puantaj verisi başarıyla senkronize edildi!`, 'success');
         return data;
       }
     } catch (e) {

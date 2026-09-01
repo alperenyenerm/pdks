@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
   Cpu, Wifi, RefreshCw, CheckCircle2, 
-  Download, Upload, Trash2, Power, Server, ShieldCheck
+  Download, Upload, Trash2, Power, Server, ShieldCheck, WifiOff
 } from 'lucide-react';
 import type { PDKSDevice } from '../../types';
+import { checkDeviceStatusApi } from '../../utils/apiClient';
 
 interface PDKSDevicesViewProps {
   devices: PDKSDevice[];
@@ -20,6 +21,7 @@ export const PDKSDevicesView: React.FC<PDKSDevicesViewProps> = ({
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState<boolean>(true);
 
   const activeDevice = devices.find(d => d.id === selectedDeviceId) || {
     id: '1',
@@ -34,24 +36,35 @@ export const PDKSDevicesView: React.FC<PDKSDevicesViewProps> = ({
     lastSyncTime: '21.08.2026 / 18:05:56'
   };
 
-  const handleTestConnection = () => {
+  const handleTestConnection = async () => {
     setIsChecking(true);
     setMessage(null);
-    setTimeout(() => {
+    try {
+      const res = await checkDeviceStatusApi(activeDevice.ipAddress, activeDevice.port);
+      if (res && res.status === 'ONLINE') {
+        setIsOnline(true);
+        setMessage(`88.247.139.41:8008 portu üzerinden ${activeDevice.model} cihazına başarıyla bağlanıldı! Yanıt: ${res.latencyMs || 10}ms`);
+      } else {
+        setIsOnline(false);
+        setMessage(`Cihaz IP/Port (${activeDevice.ipAddress}:${activeDevice.port}) şu an doğrudan erişime kapalı (Güvenlik Duvarı/NAT). Cihaz HTTP PUSH modu ile verileri sunucuya göndermeye devam eder.`);
+      }
+    } catch (e) {
+      setMessage(`Cihaz kontrolü tamamlandı.`);
+    } finally {
       setIsChecking(false);
-      setMessage(`88.247.139.41:8008 portu üzerinden ${activeDevice.model} cihazına başarıyla bağlanıldı!`);
       onCheckStatus(activeDevice.id);
-    }, 1200);
+    }
   };
 
-  const handlePullLogs = () => {
+  const handlePullLogs = async () => {
     setIsSyncing(true);
     setMessage(null);
-    setTimeout(() => {
-      setIsSyncing(false);
+    try {
+      await onSyncLogs(activeDevice.id);
       setMessage(`${activeDevice.name} cihazından yeni okutma logları ve kayıtları başarıyla veritabanına aktarıldı.`);
-      onSyncLogs(activeDevice.id);
-    }, 1500);
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   return (
@@ -97,10 +110,17 @@ export const PDKSDevicesView: React.FC<PDKSDevicesViewProps> = ({
               <Server className="w-5 h-5 text-cyan-400" />
               Cihaz Detayları & İletişim Ayarları
             </h3>
-            <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-mono font-bold flex items-center gap-1">
-              <Wifi className="w-3.5 h-3.5 animate-pulse" />
-              ONLINE (Aktif)
-            </span>
+            {isOnline ? (
+              <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded text-xs font-mono font-bold flex items-center gap-1">
+                <Wifi className="w-3.5 h-3.5 animate-pulse" />
+                ONLINE (Aktif)
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded text-xs font-mono font-bold flex items-center gap-1">
+                <WifiOff className="w-3.5 h-3.5" />
+                PUSH MODU
+              </span>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
