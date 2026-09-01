@@ -168,34 +168,39 @@ try {
         // 3. PERSONEL YÖNETİMİ
         // ==========================================
         case 'save_worker':
-            $w = $inputData;
+            $workersList = isset($inputData['workers']) ? $inputData['workers'] : (isset($inputData[0]) ? $inputData : [$inputData]);
             $stmt = $pdo->prepare("INSERT INTO workers (id, code, first_name, last_name, role, daily_rate, overtime_hourly_rate, phone, iban, department, branch_id, status, start_date, tc_no, card_number, skill_level, avatar_color, notes)
                 VALUES (:id, :code, :first_name, :last_name, :role, :daily_rate, :overtime_hourly_rate, :phone, :iban, :department, :branch_id, :status, :start_date, :tc_no, :card_number, :skill_level, :avatar_color, :notes)
                 ON DUPLICATE KEY UPDATE
                 first_name=VALUES(first_name), last_name=VALUES(last_name), role=VALUES(role), daily_rate=VALUES(daily_rate), overtime_hourly_rate=VALUES(overtime_hourly_rate), phone=VALUES(phone), iban=VALUES(iban), department=VALUES(department), branch_id=VALUES(branch_id), status=VALUES(status), card_number=VALUES(card_number), notes=VALUES(notes)");
             
-            $stmt->execute([
-                ':id' => $w['id'],
-                ':code' => isset($w['code']) ? $w['code'] : 'PRS-' . rand(100, 999),
-                ':first_name' => $w['firstName'],
-                ':last_name' => $w['lastName'],
-                ':role' => $w['role'],
-                ':daily_rate' => $w['dailyRate'],
-                ':overtime_hourly_rate' => $w['overtimeHourlyRate'],
-                ':phone' => isset($w['phone']) ? $w['phone'] : '',
-                ':iban' => isset($w['iban']) ? $w['iban'] : '',
-                ':department' => $w['department'],
-                ':branch_id' => !empty($w['branchId']) ? $w['branchId'] : null,
-                ':status' => isset($w['status']) ? $w['status'] : 'active',
-                ':start_date' => !empty($w['startDate']) ? $w['startDate'] : date('Y-m-d'),
-                ':tc_no' => isset($w['tcNo']) ? $w['tcNo'] : null,
-                ':card_number' => isset($w['cardNumber']) ? $w['cardNumber'] : null,
-                ':skill_level' => isset($w['skillLevel']) ? $w['skillLevel'] : 'Operatör',
-                ':avatar_color' => isset($w['avatarColor']) ? $w['avatarColor'] : 'from-amber-500 to-amber-700',
-                ':notes' => isset($w['notes']) ? $w['notes'] : ''
-            ]);
+            $pdo->beginTransaction();
+            foreach ($workersList as $w) {
+                if (empty($w['id']) || empty($w['firstName'])) continue;
+                $stmt->execute([
+                    ':id' => $w['id'],
+                    ':code' => isset($w['code']) ? $w['code'] : 'PRS-' . rand(100, 999),
+                    ':first_name' => $w['firstName'],
+                    ':last_name' => isset($w['lastName']) ? $w['lastName'] : '',
+                    ':role' => isset($w['role']) ? $w['role'] : 'Personel',
+                    ':daily_rate' => isset($w['dailyRate']) ? (float)$w['dailyRate'] : 1500,
+                    ':overtime_hourly_rate' => isset($w['overtimeHourlyRate']) ? (float)$w['overtimeHourlyRate'] : 281.25,
+                    ':phone' => isset($w['phone']) ? $w['phone'] : '',
+                    ':iban' => isset($w['iban']) ? $w['iban'] : '',
+                    ':department' => isset($w['department']) ? $w['department'] : 'Genel',
+                    ':branch_id' => !empty($w['branchId']) ? $w['branchId'] : null,
+                    ':status' => isset($w['status']) ? $w['status'] : 'active',
+                    ':start_date' => !empty($w['startDate']) ? $w['startDate'] : date('Y-m-d'),
+                    ':tc_no' => isset($w['tcNo']) ? $w['tcNo'] : null,
+                    ':card_number' => isset($w['cardNumber']) ? $w['cardNumber'] : null,
+                    ':skill_level' => isset($w['skillLevel']) ? $w['skillLevel'] : 'Operatör',
+                    ':avatar_color' => isset($w['avatarColor']) ? $w['avatarColor'] : 'from-amber-500 to-amber-700',
+                    ':notes' => isset($w['notes']) ? $w['notes'] : ''
+                ]);
+            }
+            $pdo->commit();
 
-            echo json_encode(['success' => true, 'message' => 'Personel kaydedildi.'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['success' => true, 'message' => 'Personel(ler) başarıyla kaydedildi.'], JSON_UNESCAPED_UNICODE);
             break;
 
         case 'delete_worker':

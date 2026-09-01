@@ -106,6 +106,7 @@ interface AppContextType {
   
   // Worker actions
   addWorker: (worker: Omit<Worker, 'id'>) => void;
+  bulkAddWorkers: (workers: (Omit<Worker, 'id'> & { id?: string })[]) => void;
   updateWorker: (worker: Worker) => void;
   deleteWorker: (id: string) => void;
   
@@ -379,6 +380,52 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logAction('PERSONEL_EKLE', 'PERSONEL', `${created.firstName} ${created.lastName} kadroya eklendi.`);
   };
 
+  const bulkAddWorkers = (newWorkers: (Omit<Worker, 'id'> & { id?: string })[]) => {
+    const preparedList: Worker[] = newWorkers.map((w, idx) => ({
+      id: w.id || `w-${Date.now()}-${idx}`,
+      code: w.code || `YNR-${String(idx + 1).padStart(3, '0')}`,
+      firstName: w.firstName || 'Personel',
+      lastName: w.lastName || '',
+      role: w.role || 'Operatör',
+      dailyRate: w.dailyRate || 1500,
+      overtimeHourlyRate: w.overtimeHourlyRate || Math.round(((w.dailyRate || 1500) / 8) * 1.5),
+      phone: w.phone || '',
+      iban: w.iban || '',
+      department: w.department || 'Genel',
+      branchId: w.branchId,
+      status: w.status || 'active',
+      startDate: w.startDate || new Date().toISOString().slice(0, 10),
+      tcNo: w.tcNo,
+      cardNumber: w.cardNumber,
+      skillLevel: w.skillLevel || 'Operatör',
+      notes: w.notes || '',
+      avatarColor: w.avatarColor || 'from-amber-500 to-amber-700'
+    }));
+
+    setWorkers((prev) => {
+      const existingMap = new Map(prev.map((w) => [w.id, w]));
+      preparedList.forEach((pw) => {
+        // If matches by code or cardNumber, replace or update
+        const match = prev.find(
+          (p) =>
+            p.id === pw.id ||
+            (pw.code && p.code.toLowerCase() === pw.code.toLowerCase()) ||
+            (pw.cardNumber && p.cardNumber && p.cardNumber === pw.cardNumber)
+        );
+        if (match) {
+          existingMap.set(match.id, { ...match, ...pw, id: match.id });
+        } else {
+          existingMap.set(pw.id, pw);
+        }
+      });
+      return Array.from(existingMap.values());
+    });
+
+    saveWorkerToApi(preparedList);
+    notify('Excel Aktarımı Başarılı', `${preparedList.length} Personel başarıyla sisteme aktarıldı ve MySQL veritabanına kaydedildi!`, 'success');
+    logAction('TOPLU_PERSONEL_EKLE', 'PERSONEL', `${preparedList.length} personel Excel/Toplu aktarımla kaydedildi.`);
+  };
+
   const updateWorker = (updated: Worker) => {
     setWorkers((prev) => prev.map((w) => (w.id === updated.id ? updated : w)));
     saveWorkerToApi(updated);
@@ -626,6 +673,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         applyBulkLeave,
         syncDeviceLogs,
         addWorker,
+        bulkAddWorkers,
         updateWorker,
         deleteWorker,
         setAttendanceRecord,

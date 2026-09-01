@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import type { Worker } from '../../types';
 import { formatCurrency } from '../../utils/calculations';
+import { parseWorkersFromExcel, downloadSampleWorkerExcel } from '../../utils/excelUtils';
 import {
   UserPlus,
   Search,
@@ -14,14 +15,18 @@ import {
   X,
   UserCheck,
   CreditCard,
+  FileSpreadsheet,
+  Download,
 } from 'lucide-react';
 
 export const WorkerManagement: React.FC = () => {
-  const { workers, monthlySummaries, addWorker, updateWorker, deleteWorker } = useApp();
+  const { workers, monthlySummaries, addWorker, bulkAddWorkers, updateWorker, deleteWorker, notify } = useApp();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState<'ALL' | 'active' | 'passive'>('active');
+  const [isImporting, setIsImporting] = useState(false);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -123,8 +128,38 @@ export const WorkerManagement: React.FC = () => {
     }));
   };
 
+  const handleExcelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const file = files[0];
+
+    try {
+      setIsImporting(true);
+      const parsed = await parseWorkersFromExcel(file);
+      if (parsed.length === 0) {
+        notify('Uyarı', 'Excel dosyasında personel kaydı bulunamadı.', 'warning');
+        return;
+      }
+      bulkAddWorkers(parsed);
+      notify('Excel Yüklendi', `${parsed.length} personel başarıyla aktarıldı ve kaydedildi.`, 'success');
+    } catch (err: any) {
+      notify('Hata', err.message || 'Excel dosyası okunamadı.', 'error');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".xlsx, .xls, .csv"
+        onChange={handleExcelUpload}
+        className="hidden"
+      />
+
       {/* Header Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 p-4 rounded-2xl shadow-lg">
         <div>
@@ -133,17 +168,37 @@ export const WorkerManagement: React.FC = () => {
             Personel & Kadro Yönetimi
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Çalışan listesini görün, yeni personel ekleyin, yövmiye ve saatlik mesai ücretlerini tanımlayın.
+            Çalışan listesini görün, yeni personel ekleyin veya Excel ile toplu yükleyin.
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="flex items-center space-x-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-lg shadow-amber-500/20"
-        >
-          <UserPlus className="w-4 h-4" />
-          <span>Yeni Personel Ekle</span>
-        </button>
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            onClick={downloadSampleWorkerExcel}
+            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-xl text-xs transition border border-slate-700"
+            title="Örnek Excel Şablonu İndir"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Şablon İndir</span>
+          </button>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isImporting}
+            className="flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3.5 py-2 rounded-xl text-xs transition shadow-md disabled:opacity-50"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>{isImporting ? 'Yükleniyor...' : 'Excel\'den Yükle'}</span>
+          </button>
+
+          <button
+            onClick={handleOpenAdd}
+            className="flex items-center space-x-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs transition shadow-lg shadow-amber-500/20"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Yeni Personel</span>
+          </button>
+        </div>
       </div>
 
       {/* Filters Bar */}

@@ -38,12 +38,13 @@ export async function fetchAllDataFromApi() {
   }
 }
 
-export async function saveWorkerToApi(worker: any) {
+export async function saveWorkerToApi(workerOrWorkers: any) {
   try {
+    const body = Array.isArray(workerOrWorkers) ? { workers: workerOrWorkers } : workerOrWorkers;
     await fetch(getApiUrl('save_worker'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(worker),
+      body: JSON.stringify(body),
     });
   } catch (err) {
     console.warn('Personel PHP API senkronizasyon uyarısı:', err);
