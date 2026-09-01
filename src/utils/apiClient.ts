@@ -4,12 +4,14 @@
  */
 
 const getApiUrl = (action: string) => {
-  return `api.php?action=${action}`;
+  const ts = Date.now();
+  const sep = action.includes('?') ? '&' : '?';
+  return `api.php?action=${action}${sep}_t=${ts}`;
 };
 
 export async function fetchApiStatus() {
   try {
-    const res = await fetch(getApiUrl('status'));
+    const res = await fetch(getApiUrl('status'), { cache: 'no-store' });
     if (!res.ok) throw new Error('API Offline');
     return await res.json();
   } catch (err) {
@@ -20,7 +22,13 @@ export async function fetchApiStatus() {
 
 export async function fetchAllDataFromApi() {
   try {
-    const res = await fetch(getApiUrl('all_data'));
+    const res = await fetch(getApiUrl('all_data'), {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
     if (!res.ok) return null;
     const json = await res.json();
     return json.success ? json.data : null;

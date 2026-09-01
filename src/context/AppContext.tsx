@@ -184,7 +184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   
   const [selectedYear, setSelectedYear] = useState<number>(2026);
   const [selectedMonth, setSelectedMonth] = useState<number>(8);
-  const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const [activeTab, setActiveTab] = useState<string>('pdks_dashboard');
   const [toasts, setToasts] = useState<NotificationToast[]>([]);
 
   const loginUser = (user: UserSession) => {
@@ -315,19 +315,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     async function initDataFromApi() {
       const apiData = await fetchAllDataFromApi();
       if (apiData) {
-        setWorkers(apiData.workers || []);
-        setAttendance(apiData.attendance || []);
-        setAdvances(apiData.advances || []);
-        setProjects(apiData.projects || []);
-        setMachinery(apiData.machinery || []);
-        if (apiData.branches && apiData.branches.length > 0) setBranches(apiData.branches);
-        if (apiData.holidays && apiData.holidays.length > 0) setHolidays(apiData.holidays);
+        if (apiData.workers !== undefined) setWorkers(apiData.workers);
+        if (apiData.attendance !== undefined) setAttendance(apiData.attendance);
+        if (apiData.advances !== undefined) setAdvances(apiData.advances);
+        if (apiData.projects !== undefined) setProjects(apiData.projects);
+        if (apiData.machinery !== undefined) setMachinery(apiData.machinery);
+        if (apiData.branches !== undefined) setBranches(apiData.branches);
+        if (apiData.holidays !== undefined) setHolidays(apiData.holidays);
         if (apiData.settings) setSettings((prev) => ({ ...prev, ...apiData.settings }));
-        if (apiData.disciplinary) setDisciplinary(apiData.disciplinary);
-        if (apiData.auditLogs) setAuditLogs(apiData.auditLogs);
-        if (apiData.pdksShifts && apiData.pdksShifts.length > 0) setPdksShifts(apiData.pdksShifts);
-        if (apiData.pdksLogs && apiData.pdksLogs.length > 0) setPdksLogs(apiData.pdksLogs);
-        if (apiData.pdksDailySummary && apiData.pdksDailySummary.length > 0) setPdksDailySummary(apiData.pdksDailySummary);
+        if (apiData.disciplinary !== undefined) setDisciplinary(apiData.disciplinary);
+        if (apiData.auditLogs !== undefined) setAuditLogs(apiData.auditLogs);
+        if (apiData.pdksShifts !== undefined) setPdksShifts(apiData.pdksShifts);
+        if (apiData.pdksLogs !== undefined) setPdksLogs(apiData.pdksLogs);
+        if (apiData.pdksDailySummary !== undefined) setPdksDailySummary(apiData.pdksDailySummary);
       }
     }
     initDataFromApi();
