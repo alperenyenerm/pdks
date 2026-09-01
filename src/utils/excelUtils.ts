@@ -18,19 +18,183 @@ function normalizeHeader(str: string): string {
 }
 
 /**
- * Parses uploaded Excel (.xlsx, .xls, .csv) file and extracts valid Worker list
+ * Parses XML / PDKS file content
+ */
+function parseXmlContent(text: string): Worker[] {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(text, 'text/xml');
+  const parseError = xmlDoc.getElementsByTagName('parsererror');
+  if (parseError && parseError.length > 0) {
+    throw new Error('Geçersiz XML formatı.');
+  }
+
+  // Find repeat elements (e.g. <Personel>, <Worker>, <Row>, <Record>, <Kart>, etc.)
+  const candidateTags = ['personel', 'personeller', 'worker', 'row', 'record', 'kart', 'eleman', 'calisan', 'item'];
+  let items: Element[] = [];
+
+  for (const tag of candidateTags) {
+    const found = xmlDoc.getElementsByTagName(tag);
+    if (found && found.length > 0) {
+      items = Array.from(found);
+      break;
+    }
+  }
+
+  // Fallback: If no standard tag found, look for all elements with multiple child elements
+  if (items.length === 0) {
+    const allElems = Array.from(xmlDoc.getElementsByTagName('*'));
+    items = allElems.filter(el => el.children.length >= 2);
+  }
+
+  if (items.length === 0) {
+    throw new Error('XML dosyasında personel kaydı bulunamadı.');
+  }
+
+  const workers: Worker[] = [];
+  const timestamp = Date.now();
+
+  items.forEach((item, idx) => {
+    const normRow: { [key: string]: string } = {};
+
+    // Read child nodes
+    Array.from(item.children).forEach((child) => {
+      const key = normalizeHeader(child.nodeName);
+      normRow[key] = (child.textContent || '').trim();
+    });
+
+    // Read attributes
+    Array.from(item.attributes || []).forEach((attr) => {
+      const key = normalizeHeader(attr.name);
+      normRow[key] = (attr.value || '').trim();
+    });
+
+    const getVal = (aliases: string[]) => {
+      for (const alias of aliases) {
+        const normAlias = normalizeHeader(alias);
+        if (normRow[normAlias] !== undefined && normRow[normAlias] !== '') {
+          return normRow[normAlias];
+        }
+      }
+      return '';
+    };
+
+    let firstName = getVal(['ad', 'adi', 'isim', 'firstname', 'first_name']);
+    let lastName = getVal(['soyad', 'soyadi', 'lastname', 'last_name']);
+    const fullName = getVal(['adsoyad', 'advesoyad', 'isimsoyisim', 'personeladi', 'fullname', 'name']);
+
+    if ((!firstName || firstName.length === 0) && fullName) {
+      const parts = fullName.split(' ').filter(Boolean);
+      if (parts.length === 1) {
+        firstName = parts[0];
+        lastName = '';
+      } else {
+        lastName = parts.pop() || '';
+        firstName = parts.join(' ');
+      }
+    }
+
+    if (!firstName && !lastName && !fullName) return;
+
+    const code = getVal(['sicilno', 'sicil', 'kod', 'personelkodu', 'code', 'id']) || `PRS-${String(idx + 1).padStart(3, '0')}`;
+    const cardNumber = getVal(['kartno', 'kartnumarasi', 'kart', 'cardnumber', 'card_number', 'kartno(perkotek)']) || '';
+    const tcNo = getVal(['tcno', 'tckimlikno', 'tc', 'tc_no', 'tckimlik']) || '';
+    const department = getVal(['departman', 'bolum', 'department', 'kategori']) || 'Genel Kadro';
+    const role = getVal(['gorev', 'unvan', 'pozisyon', 'role', 'meslek', 'gorevi']) || 'Operatör';
+    const phone = getVal(['telefon', 'tel', 'gsm', 'cep', 'phone']) || '';
+    const iban = getVal(['iban', 'ibanno', 'iban_no', 'hesapno']) || '';
+
+    const rawDailyRate = getVal(['gunlukucret', 'ucret', 'yovmiye', 'maas', 'dailyrate', 'daily_rate', 'gunluk']);
+    let dailyRate = 1500;
+    if (rawDailyRate) {
+      const parsedRate = parseFloat(rawDailyRate.replace(/[^0-9.,]/g, '').replace(',', '.'));
+      if (!isNaN(parsedRate) && parsedRate > 0) dailyRate = parsedRate;
+    }
+
+    const rawOvertime = getVal(['mesaiucreti', 'saatlikmesai', 'overtimehourlyrate', 'overtime_hourly_rate']);
+    let overtimeHourlyRate = Math.round((dailyRate / 8) * 1.5);
+    if (rawOvertime) {
+      const parsedOt = parseFloat(rawOvertime.replace(/[^0-9.,]/g, '').replace(',', '.'));
+      if (!isNaN(parsedOt) && parsedOt > 0) overtimeHourlyRate = parsedOt;
+    }
+
+    const rawStartDate = getVal(['giristarihi', 'isebaslama', 'baslamatarihi', 'startdate', 'start_date']);
+    let startDate = new Date().toISOString().slice(0, 10);
+    if (rawStartDate) {
+      if (rawStartDate.includes('.') || rawStartDate.includes('/')) {
+        const parts = rawStartDate.split(/[./-]/);
+        if (parts.length === 3) {
+          if (parts[2].length === 4) {
+            startDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          } else if (parts[0].length === 4) {
+            startDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+          }
+        }
+      } else if (rawStartDate.length === 10) {
+        startDate = rawStartDate;
+      }
+    }
+
+    workers.push({
+      id: `w-xml-${timestamp}-${idx}`,
+      code,
+      firstName: firstName || 'Personel',
+      lastName: lastName || '',
+      role,
+      dailyRate,
+      overtimeHourlyRate,
+      phone,
+      iban,
+      department,
+      status: 'active',
+      startDate,
+      tcNo: tcNo || undefined,
+      cardNumber: cardNumber || undefined,
+      skillLevel: 'Operatör',
+      avatarColor: 'from-amber-500 to-amber-700',
+      notes: 'XML / PDKS aktarımı ile eklendi'
+    });
+  });
+
+  return workers;
+}
+
+/**
+ * Parses uploaded Excel (.xlsx, .xls, .csv), XML (.xml) or Perkotek export (.pdks) file
  */
 export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
   return new Promise((resolve, reject) => {
+    const isXmlOrPdks = file.name.endsWith('.xml') || file.name.endsWith('.pdks');
+
     const reader = new FileReader();
 
     reader.onload = (e) => {
       try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const result = e.target?.result;
+
+        // Check if file is XML / PDKS format
+        if (typeof result === 'string' && (isXmlOrPdks || result.trim().startsWith('<'))) {
+          const xmlWorkers = parseXmlContent(result);
+          resolve(xmlWorkers);
+          return;
+        }
+
+        // Try ArrayBuffer Excel Parsing
+        const data = new Uint8Array(result as ArrayBuffer);
+        
+        // Quick check if text XML in array buffer
+        const textDecoder = new TextDecoder('utf-8');
+        const textSample = textDecoder.decode(data.slice(0, 200));
+        if (textSample.trim().startsWith('<?xml') || textSample.trim().startsWith('<')) {
+          const fullText = textDecoder.decode(data);
+          const xmlWorkers = parseXmlContent(fullText);
+          resolve(xmlWorkers);
+          return;
+        }
+
         const workbook = XLSX.read(data, { type: 'array' });
 
         if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
-          throw new Error('Excel dosyasında geçerli bir çalışma sayfası bulunamadı.');
+          throw new Error('Dosyada geçerli bir çalışma sayfası bulunamadı.');
         }
 
         const sheetName = workbook.SheetNames[0];
@@ -38,20 +202,18 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
         const rawJson: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
         if (!rawJson || rawJson.length === 0) {
-          throw new Error('Excel dosyasında okunabilir veri bulunamadı.');
+          throw new Error('Dosyada okunabilir veri bulunamadı.');
         }
 
         const workers: Worker[] = [];
         const timestamp = Date.now();
 
         rawJson.forEach((row, idx) => {
-          // Normalize row keys
           const normRow: { [key: string]: any } = {};
           Object.keys(row).forEach((key) => {
             normRow[normalizeHeader(key)] = row[key];
           });
 
-          // Helper to get matching key
           const getVal = (aliases: string[]) => {
             for (const alias of aliases) {
               const normAlias = normalizeHeader(alias);
@@ -77,7 +239,6 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
             }
           }
 
-          // Skip completely blank rows
           if (!firstName && !lastName && !fullName) {
             return;
           }
@@ -111,7 +272,6 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
           const rawStartDate = getVal(['giristarihi', 'isebaslama', 'baslamatarihi', 'startdate', 'start_date']);
           let startDate = new Date().toISOString().slice(0, 10);
           if (rawStartDate) {
-            // Check if Excel serial date number
             if (!isNaN(Number(rawStartDate)) && Number(rawStartDate) > 20000) {
               try {
                 const dateObj = new Date((Number(rawStartDate) - (25567 + 2)) * 86400 * 1000);
@@ -122,7 +282,6 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
             } else if (rawStartDate.includes('.') || rawStartDate.includes('/')) {
               const parts = rawStartDate.split(/[./-]/);
               if (parts.length === 3) {
-                // DD.MM.YYYY -> YYYY-MM-DD
                 if (parts[2].length === 4) {
                   startDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
                 } else if (parts[0].length === 4) {
@@ -151,7 +310,7 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
             cardNumber: cardNumber || undefined,
             skillLevel: 'Operatör',
             avatarColor: 'from-amber-500 to-amber-700',
-            notes: 'Excel aktarımı ile eklendi'
+            notes: 'Excel/XML aktarımı ile eklendi'
           };
 
           workers.push(worker);
@@ -159,7 +318,7 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
 
         resolve(workers);
       } catch (err: any) {
-        reject(new Error(err.message || 'Excel dosyası ayrıştırılamadı.'));
+        reject(new Error(err.message || 'Dosya ayrıştırılamadı.'));
       }
     };
 
@@ -167,7 +326,11 @@ export async function parseWorkersFromExcel(file: File): Promise<Worker[]> {
       reject(new Error('Dosya okunamadı.'));
     };
 
-    reader.readAsArrayBuffer(file);
+    if (isXmlOrPdks) {
+      reader.readAsText(file, 'utf-8');
+    } else {
+      reader.readAsArrayBuffer(file);
+    }
   });
 }
 
@@ -224,20 +387,19 @@ export function downloadSampleWorkerExcel() {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Personel Listesi');
 
-  // Auto-fit column widths
   const colWidths = [
-    { wch: 12 }, // Sicil No
-    { wch: 10 }, // Kart No
-    { wch: 14 }, // Adı
-    { wch: 14 }, // Soyadı
-    { wch: 16 }, // TC Kimlik No
-    { wch: 20 }, // Departman
-    { wch: 24 }, // Görevi
-    { wch: 18 }, // Günlük Ücret
-    { wch: 18 }, // Saatlik Mesai
-    { wch: 16 }, // Telefon
-    { wch: 30 }, // IBAN
-    { wch: 18 }, // İşe Başlama Tarihi
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 20 },
+    { wch: 24 },
+    { wch: 18 },
+    { wch: 18 },
+    { wch: 16 },
+    { wch: 30 },
+    { wch: 18 },
   ];
   worksheet['!cols'] = colWidths;
 

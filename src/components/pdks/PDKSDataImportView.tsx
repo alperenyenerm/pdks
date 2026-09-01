@@ -245,14 +245,14 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition shadow-md flex items-center gap-2"
             >
               <UploadCloud className="w-4 h-4" />
-              <span>Dosya Seç (.xlsx, .csv)</span>
+              <span>Dosya Seç (.xlsx, .xml, .pdks)</span>
             </button>
           </div>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept=".xlsx, .xls, .csv"
+            accept=".xlsx, .xls, .csv, .xml, .pdks"
             onChange={handleFileChange}
             className="hidden"
           />
@@ -274,10 +274,10 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
             </div>
             <div>
               <p className="text-sm font-semibold text-slate-200">
-                {uploadFileName ? `Seçilen Dosya: ${uploadFileName}` : 'Excel dosyasını buraya sürükleyip bırakın veya tıklayın'}
+                {uploadFileName ? `Seçilen Dosya: ${uploadFileName}` : 'Excel, XML veya .pdks dosyasını buraya sürükleyip bırakın veya tıklayın'}
               </p>
               <p className="text-xs text-slate-500 mt-1">
-                Desteklenen formatlar: .xlsx, .xls, .csv (Perkotek şablonu veya genel Excel)
+                Desteklenen formatlar: .xlsx, .xls, .csv, .xml, .pdks (Perkotek XML Aktarımı)
               </p>
             </div>
           </div>

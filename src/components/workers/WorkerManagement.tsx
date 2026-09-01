@@ -155,7 +155,7 @@ export const WorkerManagement: React.FC = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".xlsx, .xls, .csv"
+        accept=".xlsx, .xls, .csv, .xml, .pdks"
         onChange={handleExcelUpload}
         className="hidden"
       />
