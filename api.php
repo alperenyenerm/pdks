@@ -69,7 +69,7 @@ try {
             FROM company_settings LIMIT 1");
             $settings = $settingsStmt->fetch();
 
-            $workersStmt = $pdo->query("SELECT id, code, first_name as firstName, last_name as lastName, role, daily_rate as dailyRate, overtime_hourly_rate as overtimeHourlyRate, phone, iban, department, branch_id as branchId, status, start_date as startDate, tc_no as tcNo, skill_level as skillLevel, avatar_color as avatarColor, notes FROM workers");
+            $workersStmt = $pdo->query("SELECT id, code, first_name as firstName, last_name as lastName, role, daily_rate as dailyRate, overtime_hourly_rate as overtimeHourlyRate, phone, iban, department, branch_id as branchId, status, start_date as startDate, tc_no as tcNo, card_number as cardNumber, skill_level as skillLevel, avatar_color as avatarColor, notes FROM workers");
             $workers = $workersStmt->fetchAll();
 
             $attendanceStmt = $pdo->query("SELECT id, worker_id as workerId, date, type, overtime_hours as overtimeHours, overtime_multiplier as overtimeMultiplier, shift, project_id as projectId, machinery_id as machineryId, branch_id as branchId, meal_allowance as mealAllowance, transport_allowance as transportAllowance, check_in_time as checkInTime, check_out_time as checkOutTime, note FROM attendance");
@@ -165,10 +165,10 @@ try {
         // ==========================================
         case 'save_worker':
             $w = $inputData;
-            $stmt = $pdo->prepare("INSERT INTO workers (id, code, first_name, last_name, role, daily_rate, overtime_hourly_rate, phone, iban, department, branch_id, status, start_date, tc_no, skill_level, avatar_color, notes)
-                VALUES (:id, :code, :first_name, :last_name, :role, :daily_rate, :overtime_hourly_rate, :phone, :iban, :department, :branch_id, :status, :start_date, :tc_no, :skill_level, :avatar_color, :notes)
+            $stmt = $pdo->prepare("INSERT INTO workers (id, code, first_name, last_name, role, daily_rate, overtime_hourly_rate, phone, iban, department, branch_id, status, start_date, tc_no, card_number, skill_level, avatar_color, notes)
+                VALUES (:id, :code, :first_name, :last_name, :role, :daily_rate, :overtime_hourly_rate, :phone, :iban, :department, :branch_id, :status, :start_date, :tc_no, :card_number, :skill_level, :avatar_color, :notes)
                 ON DUPLICATE KEY UPDATE
-                first_name=VALUES(first_name), last_name=VALUES(last_name), role=VALUES(role), daily_rate=VALUES(daily_rate), overtime_hourly_rate=VALUES(overtime_hourly_rate), phone=VALUES(phone), iban=VALUES(iban), department=VALUES(department), branch_id=VALUES(branch_id), status=VALUES(status), notes=VALUES(notes)");
+                first_name=VALUES(first_name), last_name=VALUES(last_name), role=VALUES(role), daily_rate=VALUES(daily_rate), overtime_hourly_rate=VALUES(overtime_hourly_rate), phone=VALUES(phone), iban=VALUES(iban), department=VALUES(department), branch_id=VALUES(branch_id), status=VALUES(status), card_number=VALUES(card_number), notes=VALUES(notes)");
             
             $stmt->execute([
                 ':id' => $w['id'],
@@ -185,6 +185,7 @@ try {
                 ':status' => isset($w['status']) ? $w['status'] : 'active',
                 ':start_date' => !empty($w['startDate']) ? $w['startDate'] : date('Y-m-d'),
                 ':tc_no' => isset($w['tcNo']) ? $w['tcNo'] : null,
+                ':card_number' => isset($w['cardNumber']) ? $w['cardNumber'] : null,
                 ':skill_level' => isset($w['skillLevel']) ? $w['skillLevel'] : 'Operatör',
                 ':avatar_color' => isset($w['avatarColor']) ? $w['avatarColor'] : 'from-amber-500 to-amber-700',
                 ':notes' => isset($w['notes']) ? $w['notes'] : ''
@@ -246,12 +247,15 @@ try {
 
         case 'device_push':
             // Fiziki PDKS Cihazlarından (ZKTeco, Hikvision, Parmak İzi, Yüz Tanıma, Kart Okuyucu) Otomatik Push İstekleri
-            $workerId = isset($inputData['worker_id']) ? $inputData['worker_id'] : (isset($_POST['worker_id']) ? $_POST['worker_id'] : (isset($_POST['card_no']) ? $_POST['card_no'] : (isset($inputData['card_no']) ? $inputData['card_no'] : '')));
+            $rawCardNo = isset($inputData['card_number']) ? $inputData['card_number'] : (isset($_POST['card_number']) ? $_POST['card_number'] : (isset($_POST['card_no']) ? $_POST['card_no'] : (isset($inputData['card_no']) ? $inputData['card_no'] : '')));
+            $workerId = isset($inputData['worker_id']) ? $inputData['worker_id'] : (isset($_POST['worker_id']) ? $_POST['worker_id'] : '');
             $personnelCode = isset($inputData['personnel_code']) ? $inputData['personnel_code'] : (isset($_POST['personnel_code']) ? $_POST['personnel_code'] : (isset($_POST['code']) ? $_POST['code'] : ''));
 
-            if (empty($workerId) && !empty($personnelCode)) {
-                $wStmt = $pdo->prepare("SELECT id FROM workers WHERE code = :code OR tc_no = :code LIMIT 1");
-                $wStmt->execute([':code' => $personnelCode]);
+            $searchVal = !empty($rawCardNo) ? $rawCardNo : (!empty($personnelCode) ? $personnelCode : $workerId);
+
+            if (!empty($searchVal)) {
+                $wStmt = $pdo->prepare("SELECT id FROM workers WHERE card_number = :val OR code = :val OR tc_no = :val OR id = :val LIMIT 1");
+                $wStmt->execute([':val' => $searchVal]);
                 $wRow = $wStmt->fetch();
                 if ($wRow) {
                     $workerId = $wRow['id'];
@@ -556,12 +560,12 @@ try {
         case 'magicpass_push':
             // MagicPass cihazı veya HTTP PUSH çağrılarını kabul eder
             $deviceId = isset($inputData['device_id']) ? $inputData['device_id'] : (isset($_REQUEST['device_id']) ? $_REQUEST['device_id'] : 'MAGICPASS_01');
-            $workerCode = isset($inputData['worker_code']) ? $inputData['worker_code'] : (isset($_REQUEST['pin']) ? $_REQUEST['pin'] : (isset($_REQUEST['worker_code']) ? $_REQUEST['worker_code'] : ''));
+            $workerCode = isset($inputData['card_number']) ? $inputData['card_number'] : (isset($inputData['card_no']) ? $inputData['card_no'] : (isset($inputData['worker_code']) ? $inputData['worker_code'] : (isset($_REQUEST['card_number']) ? $_REQUEST['card_number'] : (isset($_REQUEST['card_no']) ? $_REQUEST['card_no'] : (isset($_REQUEST['pin']) ? $_REQUEST['pin'] : (isset($_REQUEST['worker_code']) ? $_REQUEST['worker_code'] : ''))))));
             $timestamp = isset($inputData['timestamp']) ? $inputData['timestamp'] : (isset($_REQUEST['time']) ? $_REQUEST['time'] : date('Y-m-d H:i:s'));
             $eventState = isset($inputData['event_state']) ? $inputData['event_state'] : (isset($_REQUEST['state']) ? $_REQUEST['state'] : 'CHECK');
 
             if (empty($workerCode)) {
-                echo json_encode(['success' => false, 'error' => 'Geçersiz personel kodu (pin)'], JSON_UNESCAPED_UNICODE);
+                echo json_encode(['success' => false, 'error' => 'Geçersiz kart numarası / personel kodu (pin)'], JSON_UNESCAPED_UNICODE);
                 break;
             }
 
@@ -579,7 +583,7 @@ try {
         case 'magicpass_pull':
             $stmt = $pdo->query("SELECT m.*, CONCAT(w.first_name, ' ', w.last_name) as worker_name 
                                  FROM magicpass_logs m 
-                                 LEFT JOIN workers w ON (w.code = m.worker_code OR w.id = m.worker_code)
+                                 LEFT JOIN workers w ON (w.card_number = m.worker_code OR w.code = m.worker_code OR w.id = m.worker_code)
                                  ORDER BY m.id DESC LIMIT 100");
             $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

@@ -35,6 +35,7 @@ export interface Worker {
   skillLevel?: 'Usta' | 'Uzman' | 'Kalfa' | 'Mühendis' | 'Operatör' | 'Çırak';
   notes?: string;
   avatarColor?: string;
+  cardNumber?: string;
 }
 
 export interface OvertimeApproval {

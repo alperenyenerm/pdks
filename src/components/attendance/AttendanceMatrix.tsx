@@ -56,7 +56,7 @@ export const AttendanceMatrix: React.FC = () => {
   // Filter active workers
   const activeWorkers = workers.filter((w) => {
     if (w.status !== 'active') return false;
-    const matchSearch = `${w.firstName} ${w.lastName} ${w.code} ${w.role}`
+    const matchSearch = `${w.firstName} ${w.lastName} ${w.code} ${w.cardNumber || ''} ${w.role}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchDept = selectedDept === 'ALL' || w.department === selectedDept;

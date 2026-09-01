@@ -27,7 +27,7 @@ export const CheckInTerminal: React.FC = () => {
   const [filterDept, setFilterDept] = useState('ALL');
   const [magicLogs, setMagicLogs] = useState<MagicPassLog[]>([]);
   const [loadingMagic, setLoadingMagic] = useState(false);
-  const [simWorkerCode, setSimWorkerCode] = useState(workers[0]?.code || 'W-001');
+  const [simWorkerCode, setSimWorkerCode] = useState(workers[0]?.cardNumber || workers[0]?.code || '1001');
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -99,9 +99,14 @@ export const CheckInTerminal: React.FC = () => {
   };
 
   const handleApplyLogToAttendance = (log: MagicPassLog) => {
-    const worker = workers.find((w) => w.code === log.workerCode || w.id === log.workerCode);
+    const worker = workers.find(
+      (w) =>
+        (w.cardNumber && w.cardNumber.trim() === log.workerCode.trim()) ||
+        w.code.trim() === log.workerCode.trim() ||
+        w.id === log.workerCode
+    );
     if (!worker) {
-      notify('Eşleşme Bulunamadı', `Personel kodu (${log.workerCode}) sistemde kayıtlı değil.`, 'error');
+      notify('Eşleşme Bulunamadı', `Kart No / Personel Kodu (${log.workerCode}) sistemde kayıtlı değil.`, 'error');
       return;
     }
 
@@ -117,7 +122,38 @@ export const CheckInTerminal: React.FC = () => {
       checkOutTime: '18:00',
     });
 
-    notify('Puantaja Dönüştürüldü', `${worker.firstName} ${worker.lastName} giriş saati (${logTime}) puantaja işlendi.`, 'success');
+    notify('Puantaja Dönüştürüldü', `${worker.firstName} ${worker.lastName} (Kart: ${worker.cardNumber || worker.code}) giriş saati (${logTime}) puantaja işlendi.`, 'success');
+  };
+
+  const handleBatchApplyLogs = () => {
+    let successCount = 0;
+    magicLogs.forEach((log) => {
+      const worker = workers.find(
+        (w) =>
+          (w.cardNumber && w.cardNumber.trim() === log.workerCode.trim()) ||
+          w.code.trim() === log.workerCode.trim() ||
+          w.id === log.workerCode
+      );
+      if (worker) {
+        const logDate = log.timestamp.split(' ')[0] || todayStr;
+        const logTime = log.timestamp.split(' ')[1]?.substring(0, 5) || '08:00';
+        setAttendanceRecord({
+          workerId: worker.id,
+          date: logDate,
+          type: 'FULL',
+          overtimeHours: 0,
+          checkInTime: logTime,
+          checkOutTime: '18:00',
+        });
+        successCount++;
+      }
+    });
+
+    if (successCount > 0) {
+      notify('Kart Okumaları Puantaja Aktarıldı', `${successCount} adet cihaz kaydı Kart No ile eşleşerek puantaja işlendi.`, 'success');
+    } else {
+      notify('Eşleşen Veri Yok', 'Cihaz loglarında Kart No ile eşleşen kayıt bulunamadı.', 'warning');
+    }
   };
 
   return (
@@ -167,14 +203,24 @@ export const CheckInTerminal: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={loadMagicLogs}
-            disabled={loadingMagic}
-            className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs transition"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loadingMagic ? 'animate-spin' : ''}`} />
-            <span>Cihaz Verilerini Yenile</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleBatchApplyLogs}
+              disabled={magicLogs.length === 0}
+              className="flex items-center space-x-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition shadow"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Kart No ile Tümünü Puantaja Aktar</span>
+            </button>
+            <button
+              onClick={loadMagicLogs}
+              disabled={loadingMagic}
+              className="flex items-center space-x-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs transition"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-amber-400 ${loadingMagic ? 'animate-spin' : ''}`} />
+              <span>Cihaz Verilerini Yenile</span>
+            </button>
+          </div>
         </div>
 
         {/* Webhook Connection Guide */}
@@ -194,8 +240,8 @@ export const CheckInTerminal: React.FC = () => {
               className="bg-slate-900 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white"
             >
               {workers.map((w) => (
-                <option key={w.id} value={w.code}>
-                  {w.code} - {w.firstName} {w.lastName}
+                <option key={w.id} value={w.cardNumber || w.code}>
+                  Kart: {w.cardNumber || w.code} ({w.firstName} {w.lastName})
                 </option>
               ))}
             </select>

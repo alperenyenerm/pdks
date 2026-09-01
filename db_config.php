@@ -105,6 +105,7 @@ function initDatabaseTables(PDO $pdo) {
             `status` ENUM('active', 'passive') DEFAULT 'active',
             `start_date` DATE,
             `tc_no` VARCHAR(20),
+            `card_number` VARCHAR(50) DEFAULT NULL,
             `skill_level` VARCHAR(50) DEFAULT 'Operatör',
             `avatar_color` VARCHAR(100) DEFAULT 'from-amber-500 to-amber-700',
             `notes` TEXT,
@@ -283,6 +284,7 @@ function initDatabaseTables(PDO $pdo) {
         $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `income_tax_percent` DECIMAL(5,2) DEFAULT 15.00");
         $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `stamp_tax_percent` DECIMAL(5,3) DEFAULT 0.759");
         $pdo->exec("ALTER TABLE `company_settings` ADD COLUMN `enable_automatic_taxes` TINYINT(1) DEFAULT 1");
+        $pdo->exec("ALTER TABLE `workers` ADD COLUMN `card_number` VARCHAR(50) DEFAULT NULL AFTER `tc_no`");
     } catch (Exception $e) {
         // Ignore if already modified or no permission
     }
