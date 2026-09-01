@@ -66,9 +66,20 @@ export const AttendanceMatrix: React.FC = () => {
   const departments = Array.from(new Set(workers.map((w) => w.department).filter(Boolean)));
 
   // Helper to get record
-  const getRecordFor = (workerId: string, day: number): AttendanceRecord | undefined => {
+  const getRecordFor = (workerOrId: Worker | string, day: number): AttendanceRecord | undefined => {
     const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    return attendance.find((r) => r.workerId === workerId && r.date === dateStr);
+    const workerObj = typeof workerOrId === 'object' ? workerOrId : workers.find(w => w.id === workerOrId);
+    const wid = typeof workerOrId === 'string' ? workerOrId : workerOrId.id;
+    const card = workerObj?.cardNumber;
+    const code = workerObj?.code;
+
+    return attendance.find((r) => {
+      const match =
+        r.workerId === wid ||
+        (card && (r.workerId === card || r.workerId === `w-card-${card}`)) ||
+        (code && r.workerId === code);
+      return match && r.date === dateStr;
+    });
   };
 
   // Quick fill weekends as REST (HT) or WORK (HÇ)

@@ -56,10 +56,14 @@ export const calculateWorkerMonthlySummary = (
 ): MonthlyWorkerSummary => {
   const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
   
-  // Filter attendance for worker & month
-  const workerAttendance = attendanceRecords.filter(
-    (r) => r.workerId === worker.id && r.date.startsWith(monthPrefix)
-  );
+  // Filter attendance for worker & month with flexible ID, card number or code matching
+  const workerAttendance = attendanceRecords.filter((r) => {
+    const isMatchingWorker =
+      r.workerId === worker.id ||
+      (worker.cardNumber && (r.workerId === worker.cardNumber || r.workerId === `w-card-${worker.cardNumber}`)) ||
+      (worker.code && r.workerId === worker.code);
+    return isMatchingWorker && r.date.startsWith(monthPrefix);
+  });
 
   let fullDays = 0;
   let halfDays = 0;

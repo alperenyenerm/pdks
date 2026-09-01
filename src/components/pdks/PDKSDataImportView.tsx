@@ -25,7 +25,7 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
   workers: _workers,
   onImportSuccess
 }) => {
-  const { bulkAddWorkers, bulkSetAttendance, notify } = useApp();
+  const { bulkAddWorkers, bulkSetAttendance, setSelectedYear, setSelectedMonth, notify } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
@@ -111,6 +111,19 @@ export const PDKSDataImportView: React.FC<PDKSDataImportViewProps> = ({
     bulkAddWorkers(parsedWorkers);
     if (parsedAttendance.length > 0) {
       bulkSetAttendance(parsedAttendance);
+      // Aktarılan aya (Örn: Ağustos 2026) otomatik geçiş yap
+      const sampleDate = parsedAttendance[0]?.date;
+      if (sampleDate) {
+        const parts = sampleDate.split('-');
+        if (parts.length >= 2) {
+          const y = parseInt(parts[0], 10);
+          const m = parseInt(parts[1], 10);
+          if (!isNaN(y) && !isNaN(m)) {
+            setSelectedYear(y);
+            setSelectedMonth(m);
+          }
+        }
+      }
     }
     setImportedLogsCount(parsedWorkers.length);
     onImportSuccess(parsedWorkers.length);
